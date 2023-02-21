@@ -1,0 +1,7 @@
+[core]
+    autostage = true
+    interactive = true
+[cache]
+    dir = /lustre/groups/rieck/datasets/PhysicianNetworks/
+    shared = group
+    type = symlink
