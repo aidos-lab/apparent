@@ -9,6 +9,9 @@ packages = [{include = "doc_orc"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+numpy = "^1.24.2"
+networkx = "^3.0"
+pandas = "^1.5.3"
 
 
 [build-system]
