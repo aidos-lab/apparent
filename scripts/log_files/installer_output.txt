@@ -1,0 +1,145 @@
+Installing dependencies from lock file
+
+Package operations: 28 installs, 0 updates, 0 removals
+
+  • Installing pygit2 (1.11.1)
+
+  CalledProcessError
+
+  Command '['/home/aih/jeremy.wayland/.cache/pypoetry/virtualenvs/doc-orc-YVnzh7ww-py3.9/bin/python', '-m', 'pip', 'install', '--use-pep517', '--disable-pip-version-check', '--isolated', '--no-input', '--prefix', '/home/aih/jeremy.wayland/.cache/pypoetry/virtualenvs/doc-orc-YVnzh7ww-py3.9', '--no-deps', '/home/aih/jeremy.wayland/.cache/pypoetry/artifacts/51/65/4e/13230eba56b9a28e8af07d525db99fcf11d91d1aff3f919af2c1a1a1c0/pygit2-1.11.1.tar.gz']' returned non-zero exit status 1.
+
+  at ~/anaconda3/lib/python3.9/subprocess.py:528 in run
+       524│             # We don't call process.wait() as .__exit__ does that for us.
+       525│             raise
+       526│         retcode = process.poll()
+       527│         if check and retcode:
+    →  528│             raise CalledProcessError(retcode, process.args,
+       529│                                      output=stdout, stderr=stderr)
+       530│     return CompletedProcess(process.args, retcode, stdout, stderr)
+       531│ 
+       532│ 
+
+The following error occurred when trying to handle this error:
+
+
+  EnvCommandError
+
+  Command ['/home/aih/jeremy.wayland/.cache/pypoetry/virtualenvs/doc-orc-YVnzh7ww-py3.9/bin/python', '-m', 'pip', 'install', '--use-pep517', '--disable-pip-version-check', '--isolated', '--no-input', '--prefix', '/home/aih/jeremy.wayland/.cache/pypoetry/virtualenvs/doc-orc-YVnzh7ww-py3.9', '--no-deps', '/home/aih/jeremy.wayland/.cache/pypoetry/artifacts/51/65/4e/13230eba56b9a28e8af07d525db99fcf11d91d1aff3f919af2c1a1a1c0/pygit2-1.11.1.tar.gz'] errored with the following return code 1, and output: 
+  Processing /home/aih/jeremy.wayland/.cache/pypoetry/artifacts/51/65/4e/13230eba56b9a28e8af07d525db99fcf11d91d1aff3f919af2c1a1a1c0/pygit2-1.11.1.tar.gz
+    Installing build dependencies: started
+    Installing build dependencies: finished with status 'done'
+    Getting requirements to build wheel: started
+    Getting requirements to build wheel: finished with status 'done'
+    Installing backend dependencies: started
+    Installing backend dependencies: finished with status 'done'
+    Preparing metadata (pyproject.toml): started
+    Preparing metadata (pyproject.toml): finished with status 'done'
+  Building wheels for collected packages: pygit2
+    Building wheel for pygit2 (pyproject.toml): started
+    Building wheel for pygit2 (pyproject.toml): finished with status 'error'
+    error: subprocess-exited-with-error
+    
+    × Building wheel for pygit2 (pyproject.toml) did not run successfully.
+    │ exit code: 1
+    ╰─> [66 lines of output]
+        running bdist_wheel
+        running build
+        running build_py
+        creating build
+        creating build/lib.linux-x86_64-cpython-39
+        creating build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/__init__.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/_build.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/_run.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/blame.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/callbacks.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/config.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/credentials.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/errors.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/ffi.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/index.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/packbuilder.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/refspec.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/remote.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/repository.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/settings.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/submodule.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        copying pygit2/utils.py -> build/lib.linux-x86_64-cpython-39/pygit2
+        creating build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/attr.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/blame.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/buffer.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/callbacks.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/checkout.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/clone.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/commit.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/common.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/config.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/describe.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/diff.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/errors.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/graph.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/index.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/indexer.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/merge.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/net.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/oid.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/pack.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/proxy.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/refspec.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/remote.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/repository.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/revert.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/stash.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/strarray.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/submodule.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/transport.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/decl/types.h -> build/lib.linux-x86_64-cpython-39/pygit2/decl
+        copying pygit2/_pygit2.pyi -> build/lib.linux-x86_64-cpython-39/pygit2
+        running build_ext
+        generating cffi module 'build/temp.linux-x86_64-cpython-39/pygit2._libgit2.c'
+        creating build/temp.linux-x86_64-cpython-39
+        building 'pygit2._pygit2' extension
+        creating build/temp.linux-x86_64-cpython-39/src
+        gcc -pthread -B /home/aih/jeremy.wayland/anaconda3/compiler_compat -Wno-unused-result -Wsign-compare -DNDEBUG -O2 -Wall -fPIC -O2 -isystem /home/aih/jeremy.wayland/anaconda3/include -I/home/aih/jeremy.wayland/anaconda3/include -fPIC -O2 -isystem /home/aih/jeremy.wayland/anaconda3/include -fPIC -I/usr/local/include -I/home/aih/jeremy.wayland/.cache/pypoetry/virtualenvs/doc-orc-YVnzh7ww-py3.9/include -I/home/aih/jeremy.wayland/anaconda3/include/python3.9 -c src/blob.c -o build/temp.linux-x86_64-cpython-39/src/blob.o
+        In file included from src/diff.h:34:0,
+                         from src/blob.c:30:
+        src/types.h:36:2: error: #error You need a compatible libgit2 version (1.5.x)
+         #error You need a compatible libgit2 version (1.5.x)
+          ^
+        error: command '/usr/bin/gcc' failed with exit code 1
+        [end of output]
+    
+    note: This error originates from a subprocess, and is likely not a problem with pip.
+    ERROR: Failed building wheel for pygit2
+  Failed to build pygit2
+  ERROR: Could not build wheels for pygit2, which is required to install pyproject.toml-based projects
+  
+
+  at ~/anaconda3/lib/python3.9/site-packages/poetry/utils/env.py:1540 in _run
+      1536│                 output = subprocess.check_output(
+      1537│                     command, stderr=subprocess.STDOUT, env=env, **kwargs
+      1538│                 )
+      1539│         except CalledProcessError as e:
+    → 1540│             raise EnvCommandError(e, input=input_)
+      1541│ 
+      1542│         return decode(output)
+      1543│ 
+      1544│     def execute(self, bin: str, *args: str, **kwargs: Any) -> int:
+
+The following error occurred when trying to handle this error:
+
+
+  PoetryException
+
+  Failed to install /home/aih/jeremy.wayland/.cache/pypoetry/artifacts/51/65/4e/13230eba56b9a28e8af07d525db99fcf11d91d1aff3f919af2c1a1a1c0/pygit2-1.11.1.tar.gz
+
+  at ~/anaconda3/lib/python3.9/site-packages/poetry/utils/pip.py:58 in pip_install
+       54│ 
+       55│     try:
+       56│         return environment.run_pip(*args)
+       57│     except EnvCommandError as e:
+    →  58│         raise PoetryException(f"Failed to install {path.as_posix()}") from e
+       59│ 
+
+Poetry works!
