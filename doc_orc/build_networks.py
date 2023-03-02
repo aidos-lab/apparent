@@ -31,7 +31,7 @@ def build_network(edges_df, hsanum, year):
 
 print("Reading in csv")
 edges_df = pd.read_csv(
-    config.DATA_PATH + "data/network_panel_undirected_local_hsa_edges.csv.gz"
+    config.DATA_PATH + "/network_panel_undirected_local_hsa_edges.csv.gz"
 )
 
 print("Edge Dataframe read from csv")
@@ -62,7 +62,7 @@ df = df.assign(
 
 print("Writing Pickle...")
 
-df.to_pickle(config.DATA_PATH + "data/graphs.pkl")
+df.to_pickle(config.DATA_PATH + "/nx_netowrks_undirected_local_hsa.pkl")
 
 print("Finished pickling")
 print("----------------------------------")
