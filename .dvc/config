@@ -1,7 +1,10 @@
 [core]
     autostage = true
     interactive = true
+    remote = gdrive_storage
 [cache]
     dir = /lustre/groups/rieck/datasets/PhysicianNetworks/
     shared = group
     type = symlink
+['remote "gdrive_storage"']
+    url = gdrive://1imH9XcffzcgGtzgoi4ZX18-gNI_KHZY6
