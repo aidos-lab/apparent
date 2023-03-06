@@ -1,0 +1,4 @@
+outs:
+- md5: 6220c51a82e1c1230c044795a3c29e42
+  size: 1093061345
+  path: /lustre/groups/rieck/datasets/PhysicianNetworks/nx_netowrks_undirected_local_hsa.pkl
