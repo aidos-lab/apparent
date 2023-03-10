@@ -14,5 +14,5 @@
 DATA=../data/test_sample.pkl
 alpha=0
 
-poetry run python ../doc_orc/analysis.py --data ${DATA} --alpha ${alpha}
+poetry run python ../src/analysis.py --data ${DATA} --alpha ${alpha}
 echo "Finished Generating Networks!"
