@@ -1,1 +1,1 @@
-DATA_PATH = "../data/"
+DATA_PATH = "/lustre/groups/rieck/datasets/PhysicianNetworks/"

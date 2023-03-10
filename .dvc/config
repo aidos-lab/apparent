@@ -1,7 +1,7 @@
 [core]
     autostage = true
     interactive = true
-    remote = gdrive_storage
+    remote = jw_hpc_cluster
 [cache]
     dir = /lustre/groups/rieck/datasets/PhysicianNetworks/
     shared = group
