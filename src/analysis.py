@@ -25,6 +25,7 @@ if __name__ == "__main__":
         "-d",
         "--data",
         type=str,
+        default="/lustre/groups/rieck/datasets/PhysicianNetworks/network_panel_undirected_local_hsa_edges.csv.gz",
         help="Select location of input file.",
     )
 
@@ -37,7 +38,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--row_sample",
-        default=5,
+        default=0,
         type=int,
         help="Number of columns to sample from full datafile.",
     )
@@ -67,7 +68,7 @@ if __name__ == "__main__":
         curvature = ollivier_ricci_curvature(G, alpha=args.alpha)
         results[i] = (G, curvature)
 
-    output_dir = os.path.join(cwd, config.OUTPUT_PATH)
+    output_dir = config.OUTPUT_PATH
     output_file = f"or_curvature_alpha{args.alpha}.pkl"
 
     if os.path.isdir(output_dir):
@@ -94,3 +95,4 @@ if __name__ == "__main__":
         print(
             "\n\n -------------------------------------------------------------------------------- "
         )
+
