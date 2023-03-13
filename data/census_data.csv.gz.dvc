@@ -1,0 +1,4 @@
+outs:
+- md5: f3b3f2fef76b7284c8e9fe23db07dee6
+  size: 351549
+  path: /lustre/groups/rieck/datasets/PhysicianNetworks/census_data.csv.gz
