@@ -1,0 +1,4 @@
+outs:
+- md5: e2ecd652e0b99cc20379a89942d0b70f
+  size: 15855318
+  path: /lustre/groups/rieck/datasets/PhysicianNetworks/physician_network_curvature_hsa_postdis_6599ffs_wide.csv.gz
