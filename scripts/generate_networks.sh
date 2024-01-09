@@ -1,17 +1,26 @@
-#!/bin/bash
+#!/bin/bash -x
+#SBATCH --account=hai_ricci
+# budget account where contingent is taken from
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=10
+# if keyword omitted: Max. 96 tasks per node
+# (SMT enabled, see comment below)
+#SBATCH --cpus-per-task=1
+# for OpenMP/hybrid jobs only
+#SBATCH --output=/p/project/hai_ricci/wayland1/aidos/doc-orc/scripts/log_files/slurm-%j.out
+# if keyword omitted: Default is slurm-%j.out in
+# the submission directory (%j is replaced by
+# the job ID).
+#SBATCH --error=/p/project/hai_ricci/wayland1/aidos/doc-orc/scripts/log_files/slurm-%j.error
+# if keyword omitted: Default is slurm-%j.out in
+# the submission directory.
+#SBATCH --time=00:01:00
+#SBATCH --partition=booster
+#SBATCH --gres=gpu:0
 
-#SBATCH -o ./log_files/network-gen_output.txt
-#SBATCH -e ./log_files/network-gen_error.txt
-#SBATCH -J Wayland_doc-orc_network-gen
-#SBATCH -p cpu_p
-#SBATCH -c 1
-#SBATCH --mem=30G
-#SBATCH -t 01:00:00
-#SBATCH --nice=10000 
+conda activate doc-orc
 
-# You can put arbitrary unix commands here, call other scripts, etc...
-
-poetry run python ../doc_orc/build_networks.py
+python ../doc_orc/build_networks.py
 echo "Finished Generating Networks!"
 
 

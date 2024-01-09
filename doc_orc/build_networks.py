@@ -62,7 +62,7 @@ df = df.assign(
 
 print("Writing Pickle...")
 
-df.to_pickle(config.DATA_PATH + "/nx_netowrks_undirected_local_hsa.pkl")
+df.to_pickle(config.DATA_PATH + "/nx_networks_undirected_local_hsa.pkl")
 
 print("Finished pickling")
 print("----------------------------------")
