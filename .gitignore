@@ -4,4 +4,6 @@ __pycache__
 
 notebooks/
 scripts/log_files/
-data/
+data/*.pkl
+data/*.gz
+notebooks/
