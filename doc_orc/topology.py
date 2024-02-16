@@ -5,7 +5,7 @@ import collections.abc
 import networkx as nx
 import numpy as np
 
-from nammu.utils import UnionFind
+from utils import UnionFind
 
 
 class PersistenceDiagram(collections.abc.Sequence):

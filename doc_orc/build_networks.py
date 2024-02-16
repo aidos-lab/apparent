@@ -5,6 +5,7 @@ import config  # edit data path in here
 import networkx as nx
 import numpy as np
 import pandas as pd
+import swifter
 
 
 def build_network(edges_df, hsanum, year):
@@ -25,7 +26,6 @@ def build_network(edges_df, hsanum, year):
     assert G.is_directed() is False
     assert G.is_multigraph() is False
 
-    # return
     return G
 
 
@@ -42,7 +42,7 @@ df = edges_df[["hsanum", "year"]].drop_duplicates()
 
 print("Building Networks...")
 df = df.assign(
-    G=df.apply(
+    G=df.swifter.apply(
         lambda row: build_network(
             edges_df=edges_df, hsanum=row["hsanum"], year=row["year"]
         ),
@@ -54,12 +54,17 @@ df = df.assign(
 print("Assigning additional graph features...")
 
 df = df.assign(
-    nnodes=df.G.apply(nx.number_of_nodes),
-    nedges=df.G.apply(nx.number_of_edges),
-    density=df.G.apply(nx.density),
-    degree_assortativity=df.G.apply(nx.degree_assortativity_coefficient),
+    nnodes=df.G.swifter.apply(nx.number_of_nodes),
+    nedges=df.G.swifter.apply(nx.number_of_edges),
+    density=df.G.swifter.apply(nx.density),
+    degree_assortativity=df.G.swifter.apply(nx.degree_assortativity_coefficient),
 )
 
+
+
+
+
+print(df.head())
 print("Writing Pickle...")
 
 df.to_pickle(config.DATA_PATH + "/nx_networks_undirected_local_hsa.pkl")
