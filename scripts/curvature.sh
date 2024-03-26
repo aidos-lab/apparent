@@ -1,15 +1,15 @@
-#!/bin/bash
+#!/bin/bash -x
+#SBATCH --account=hai_ricci
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=10
+#SBATCH --cpus-per-task=1
+#SBATCH --output=/p/project/hai_ricci/wayland1/aidos/doc-orc/scripts/log_files/curvature-%j.out
+#SBATCH --error=/p/project/hai_ricci/wayland1/aidos/doc-orc/scripts/log_files/curvature-%j.error
+#SBATCH --time=02:00:00
+#SBATCH --partition=booster
+#SBATCH --gres=gpu:0
 
-#SBATCH -o ./log_files/curvature_output.txt
-#SBATCH -e ./log_files/curvature_error.txt
-#SBATCH -J Wayland_doc-orc_curvature
-#SBATCH -p cpu_p
-#SBATCH -c 1
-#SBATCH --mem=30G
-#SBATCH -t 01:00:00
-#SBATCH --nice=10000 
 
-# You can put arbitrary unix commands here, call other scripts, etc...
 
 DATA=../data/test_sample.pkl
 alpha=0

@@ -17,6 +17,7 @@ dvc = "^2.45.1"
 pygit2 = "^1.11.1"
 dvc-ssh = "^2.21.0"
 dvc-gdrive = "^2.19.1"
+swifter = "^1.4.0"
 
 [tool.black]
 line-length = 79

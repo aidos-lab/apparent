@@ -1,9 +1,10 @@
 *.ipynb_checkpoints
 __pycache__
+*.DS_Store
 
 
 notebooks/
 scripts/log_files/
 data/*.pkl
 data/*.gz
-notebooks/
+outputs/
