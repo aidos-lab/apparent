@@ -88,6 +88,7 @@ if __name__ == "__main__":
 
     if label not in df.columns:
         df[label] = [None] * df.shape[0]
+        first_empty_index = 0
     else:
         first_empty_index = df[label].isna().idxmax()
 
