@@ -4,6 +4,7 @@ import collections.abc
 
 import networkx as nx
 import numpy as np
+from gudhi.representations import Landscape
 
 from utils import UnionFind
 
@@ -152,7 +153,68 @@ class PersistenceDiagram(collections.abc.Sequence):
         Infinity norm with exponent $p$.
         """
         return max([abs(x - y) ** p for x, y in self._pairs])
+    
+    
+    def fit_landscape(self, num_landscapes:int = 5,resolution:int=1000):
+        """
+        Fit a persistence landscape to the current diagram using `gudhi`.
+        Parameters
+        ----------
+        num_landscapes : int, optional
+            The number of landscapes to fit. Default is 5.
+        resolution : int, optional
+            The resolution of the landscapes. Default is 1000.
 
+        Returns
+        -------
+        landscape : np.array
+            The fitted landscape.
+
+        Raises
+        ------
+        None
+
+        Examples
+        --------
+        >>> pairs = [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)]
+        >>> dgm = PersistenceDiagram(pairs)
+        >>> dgm.fit_landscape(num_landscapes=1, resolution=5)
+        array([[0.23570226, 0.47140452, 0.70710678, 0.47140452, 0.23570226]])
+        """
+        L = Landscape(num_landscapes=num_landscapes, resolution=resolution)
+        landscape = L.fit_transform(self.gudhi_conversion(self._pairs))
+        return landscape
+    
+    @staticmethod
+    def gudhi_conversion(pairs):
+        """
+        Convert a list of persistence pairs to the format required by `gudhi`.
+
+        Parameters
+        ----------
+        pairs : list
+            A list of persistence pairs (tuples or similar).
+        
+        Returns
+        -------
+        np.array
+            The converted persistence pairs.
+        
+        Raises
+        ------
+        None
+
+        Examples
+
+        >>> pairs = [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)]
+        >>> PersistenceDiagram.gudhi_conversion(pairs)
+        array([[[0, 1],
+        [1, 2],
+        [2, 3],
+        [3, 4],
+        [4, 5]]])
+        """
+        return np.array([np.array([np.array(pair) for pair in pairs])])
 
 def _has_vertex_attribute(graph, attribute):
     return len(nx.get_node_attributes(graph, attribute)) != 0
@@ -160,6 +222,10 @@ def _has_vertex_attribute(graph, attribute):
 
 def _has_edge_attribute(graph, attribute):
     return len(nx.get_edge_attributes(graph, attribute)) != 0
+
+
+def _mask_infinities(array):
+    return array[array[:, 1] < np.inf]
 
 
 def calculate_persistence_diagrams(
