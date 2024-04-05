@@ -153,9 +153,8 @@ class PersistenceDiagram(collections.abc.Sequence):
         Infinity norm with exponent $p$.
         """
         return max([abs(x - y) ** p for x, y in self._pairs])
-    
-    
-    def fit_landscape(self, num_landscapes:int = 5,resolution:int=1000):
+
+    def fit_landscape(self, num_landscapes: int = 5, resolution: int = 1000):
         """
         Fit a persistence landscape to the current diagram using `gudhi`.
         Parameters
@@ -184,7 +183,7 @@ class PersistenceDiagram(collections.abc.Sequence):
         L = Landscape(num_landscapes=num_landscapes, resolution=resolution)
         landscape = L.fit_transform(self.gudhi_conversion(self._pairs))
         return landscape
-    
+
     @staticmethod
     def gudhi_conversion(pairs):
         """
@@ -194,12 +193,12 @@ class PersistenceDiagram(collections.abc.Sequence):
         ----------
         pairs : list
             A list of persistence pairs (tuples or similar).
-        
+
         Returns
         -------
         np.array
             The converted persistence pairs.
-        
+
         Raises
         ------
         None
@@ -215,6 +214,7 @@ class PersistenceDiagram(collections.abc.Sequence):
         [4, 5]]])
         """
         return np.array([np.array([np.array(pair) for pair in pairs])])
+
 
 def _has_vertex_attribute(graph, attribute):
     return len(nx.get_node_attributes(graph, attribute)) != 0

@@ -130,3 +130,8 @@ if __name__ == "__main__":
     clustering_model.fit(M)
 
     plot_dendrogram(clustering_model, ids)
+
+    # TODO: Visualize PHATE Embedding of the Data per Year
+    # TODO: Implement Set Cover Algorithm
+    # TODO: Link prediction based on OR curvature distribution (sampling)
+    # TODO: Link prediction based on maximal move towards most similar "affluent representative"
