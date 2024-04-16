@@ -9,3 +9,5 @@ data/*.pkl
 data/*.gz
 outputs/
 .vscode/
+.venv/
+*.pytest_cache/
