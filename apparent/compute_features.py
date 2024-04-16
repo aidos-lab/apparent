@@ -42,7 +42,7 @@ def format_column_labels(args):
     return label
 
 
-def calculate_curvature(row, curvature_type, alpha=0, prob_fn=None):
+def calculate_curvature(G, curvature_type, alpha=0, prob_fn=None):
     """
     Calculate the curvature of a graph based on the specified curvature type.
 
@@ -60,16 +60,16 @@ def calculate_curvature(row, curvature_type, alpha=0, prob_fn=None):
 
     """
     if curvature_type == "OR":
-        return ollivier_ricci_curvature(G=row, alpha=alpha, prob_fn=prob_fn)
+        return ollivier_ricci_curvature(G=G, alpha=alpha, prob_fn=prob_fn)
     elif curvature_type == "Forman":
-        return forman_curvature(G=row)
+        return forman_curvature(G=G)
     elif curvature_type == "Resistance":
-        return resistance_curvature(G=row)
+        return resistance_curvature(G=G)
     else:
         raise ValueError(f"Unsupported curvature type: {curvature_type}")
 
 
-def add_curvature_column(df, args):
+def add_curvature_feature(feature_dict, args):
     """
     Function to add a curvature column to a DataFrame.
 
@@ -87,34 +87,23 @@ def add_curvature_column(df, args):
     - pd.DataFrame: DataFrame with the curvature column added.
     """
 
-    # Copy DataFrame
-    new = df.copy()
+    assert (
+        "graph" in feature_dict.keys()
+    ), "Graph not found in feature dictionary. First build by running `build_networks.py`."
 
-    # Format column labels
+    G = feature_dict["graph"]
     label = format_column_labels(args)
 
-    if label not in new.columns:
-        new[label] = [None] * new.shape[0]
-        first_empty_index = 0
+    if label not in feature_dict.keys():
+        feature_dict[label] = calculate_curvature(
+            G=G,
+            curvature_type=args.curvature,
+            alpha=args.alpha,
+            prob_fn=args.prob_fn,
+        )
     else:
-        first_empty_index = new[label].isna().idxmax()
-
-    partial = new.iloc[first_empty_index : first_empty_index + args.sample_size]
-
-    partial = partial.assign(
-        **{
-            label: partial.G.swifter.apply(
-                lambda row: calculate_curvature(
-                    row, args.curvature, alpha=args.alpha, prob_fn=args.prob_fn
-                )
-            )
-        },
-    )
-
-    # Replace
-    new.iloc[first_empty_index : first_empty_index + args.sample_size] = partial
-
-    return new, label
+        print(f"{label} feature is already computed!.")
+    return feature_dict
 
 
 if __name__ == "__main__":
@@ -164,17 +153,19 @@ if __name__ == "__main__":
     this = sys.modules[__name__]
 
     # Read data from pickle file
-    file = os.path.join(config.DATA_PATH, args.data)
-    df = pd.read_pickle(file)
+    files = config.OUTPUT_PATH + "graphs/"
 
-    # Add desired column
-    df, label = add_curvature_column(df, args)
+    assert os.path.exists(files), f"Path not found: {files}"
 
-    if args.save:
-        print("Writing Pickle...")
-        with open(file, "wb") as f:
-            pickle.dump(df, f)
-        print("Finished pickling")
-        print("----------------------------------")
-        print(f"New Column Added: {label}")
-        print(f"Number of Valid Entries: {df[label].notna().sum()}")
+    for file in os.listdir(files):
+        file = os.path.join(files, file)
+        print("Computing Curvature for file: ", file)
+        if file.endswith(".pkl"):
+            with open(file, "rb") as r:
+                feature_dict = pickle.load(r)
+            result = add_curvature_feature(feature_dict, args)
+            with open(file, "wb") as w:
+                pickle.dump(result, w)
+                continue
+
+    print(f"New Column Added: {label}")
