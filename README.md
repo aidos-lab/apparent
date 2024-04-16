@@ -1,5 +1,5 @@
 # apparent
-**A**nalysing **P**hysician-**P**atient **Re**ferral **N**etwork **T**opology.
+**A**nalysing **P**hysician-**Pa**tient **Re**ferral **N**etwork **T**opology.
 
 We analyze large scale networks of physician referrals across the US using discrete curvature and persistent homology.
 
