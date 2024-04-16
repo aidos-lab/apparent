@@ -11,8 +11,8 @@
 
 
 
-DATA=../data/test_sample.pkl
+DATA=../data/choc_curvature_features.pkl
 alpha=0
 
-poetry run python ../src/analysis.py --data ${DATA} --alpha ${alpha}
+poetry run python ../apparent/compute_features.py --data ${DATA} --alpha ${alpha} -c Forman -s --sample_size=1000
 echo "Finished Generating Networks!"

@@ -164,7 +164,7 @@ if __name__ == "__main__":
     this = sys.modules[__name__]
 
     # Read data from pickle file
-    file = config.DATA_PATH + args.data
+    file = os.path.join(config.DATA_PATH, args.data)
     df = pd.read_pickle(file)
 
     # Add desired column
