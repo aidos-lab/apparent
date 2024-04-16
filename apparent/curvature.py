@@ -19,7 +19,9 @@ def _forman_curvature_unweighted(G):
         target_neighbours = set(G.neighbors(target))
 
         n_triangles = len(source_neighbours.intersection(target_neighbours))
-        curvature.append(float(4 - source_degree - target_degree + 3 * n_triangles))
+        curvature.append(
+            float(4 - source_degree - target_degree + 3 * n_triangles)
+        )
 
     return np.asarray(curvature)
 
@@ -227,7 +229,9 @@ def pairwise_resistances(G, weight=None):
     R = np.zeros(shape=(n, n))
 
     # List of connected components with original node order
-    components = list([G.subgraph(c).copy() for c in nx.connected_components(G)])
+    components = list(
+        [G.subgraph(c).copy() for c in nx.connected_components(G)]
+    )
     for C in components:
         for source, target in C.edges():
             i, j = node_to_index[source], node_to_index[target]

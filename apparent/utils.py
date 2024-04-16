@@ -83,9 +83,7 @@ def propagate_edge_attribute_to_nodes(G, attribute, pooling_fn=np.sum):
     nx.set_node_attributes(G, node_attributes, name=attribute)
 
 
-def make_node_filtration(
-    G, edge_values, attribute_name="weight", use_min=True
-):
+def make_node_filtration(G, edge_values, attribute_name="weight", use_min=True):
     """Create filtration based on edge values.
 
     This function takes a vector of edge values and assigns it to

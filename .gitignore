@@ -8,3 +8,4 @@ scripts/log_files/
 data/*.pkl
 data/*.gz
 outputs/
+.vscode/
