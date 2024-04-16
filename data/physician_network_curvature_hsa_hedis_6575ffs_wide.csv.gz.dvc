@@ -1,0 +1,4 @@
+outs:
+- md5: b1d59f6fd1f53103623a28102f586835
+  size: 8885190
+  path: /lustre/groups/rieck/datasets/PhysicianNetworks/physician_network_curvature_hsa_hedis_6575ffs_wide.csv.gz

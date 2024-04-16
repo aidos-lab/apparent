@@ -1,2 +1,13 @@
-notebooks/.ipynb_checkpoints
-doc_orc/__pycache__
+*.ipynb_checkpoints
+__pycache__
+*.DS_Store
+
+
+notebooks/
+scripts/log_files/
+data/*.pkl
+data/*.gz
+outputs/
+.vscode/
+.venv/
+*.pytest_cache/
