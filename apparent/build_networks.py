@@ -28,6 +28,7 @@ def build_network(edges_df, hsanum, year):
     assert G.is_directed() is False
     assert G.is_multigraph() is False
 
+    print(G)
     return G
 
 
@@ -36,56 +37,67 @@ if __name__ == "__main__":
     in_file = (
         config.DATA_PATH + "network_panel_undirected_local_hsa_edges.csv.gz"
     )
-    edges_df = pd.read_csv(in_file)
 
+    edges_df = pd.read_csv(in_file)
     print("Edge Dataframe read from csv")
 
     print("Now removing duplicates...")
-    df = edges_df[["hsanum", "year"]].drop_duplicates()
+    df = edges_df[["hsanum", "year"]].drop_duplicates(keep="first")
 
     print("Building Networks...")
-    df.assign(
-        G=df.apply(
+    df = df.assign(
+        graph=df.apply(
             lambda row: build_network(
                 edges_df=edges_df, hsanum=row["hsanum"], year=row["year"]
             ),
             axis=1,
         )
     )
-
     print("Assigning additional graph features...")
-
     df = df.assign(
-        nnodes=df.G.swifter.apply(nx.number_of_nodes),
-        nedges=df.G.swifter.apply(nx.number_of_edges),
-        density=df.G.swifter.apply(nx.density),
-        degree_assortativity=df.G.swifter.apply(
+        nnodes=df["graph"].swifter.apply(nx.number_of_nodes),
+        nedges=df["graph"].swifter.apply(nx.number_of_edges),
+        density=df["graph"].swifter.apply(nx.density),
+        degree_assortativity=df["graph"].swifter.apply(
             nx.degree_assortativity_coefficient
         ),
     )
 
-    out_file = os.path.join(
-        config.OUTPUT_PATH, "nx_networks_undirected_local_hsa.pkl"
-    )
-    # print("Pickling Full Dataframe...")
-
-    # df.to_pickle(out_file)
+    out_file = os.path.join(config.OUTPUT_PATH, "saved_networks.pkl")
+    print(f"Saving networks to {out_file}")
+    with open(out_file, "wb") as f:
+        pickle.dump(df, f)
     print("----------------------------------")
     print(f"File stats: Num_graphs={len(df)}")
     print("Pickling individual graphs...")
 
-    graphs_path = os.path.join(
-        "/Users/jeremy.wayland/Desktop/projects/apparent/outputs/", "graphs"
-    )
+    graphs_path = config.OUTPUT_PATH + "graphs/"
     print(f"Graphs will be saved to {graphs_path}")
     if not os.path.exists(graphs_path):
         os.makedirs(graphs_path)
 
-    for i, G in enumerate(df.G.values):
+    relevant_fields = [
+        "graph",
+        "nnodes",
+        "nedges",
+        "density",
+        "degree_assortativity",
+        "year",
+        "hsanum",
+    ]
 
+    for i, row in df[relevant_fields].iterrows():
+        data = {col: row[col] for col in relevant_fields}
         out_file = os.path.join(graphs_path, f"graph_{i}.pkl")
-        result = {"graph": G}
+        print(f"Pickling graph {i} to {out_file}")
+        if os.path.exists(out_file):
+            print("Path Exists!")
+            with open(out_file, "rb") as f:
+                saved_network = pickle.load(f)
+                assert nx.is_isomorphic(row["graph"], saved_network["graph"])
+            data.pop("graph")
+            data = {**saved_network, **data}
+            print(data)
         with open(out_file, "wb") as f:
-            pickle.dump(result, f)
-
-    sys.exit(0)
+            pickle.dump(data, f)
+    print("Finished pickling individual graphs!")
