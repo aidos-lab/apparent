@@ -34,6 +34,7 @@ def fit_landscapes(
         G = make_node_filtration(G, curvature, attribute_name="curvature")
 
         dgm = calculate_persistence_diagrams(G, "curvature", "curvature")
+        # TODO: Treat trivial diagrams better
         try:
             landscapes[network_id] = {
                 i: D.fit_landscape() for i, D in enumerate(dgm)
@@ -57,15 +58,14 @@ def pairwise_landscape_distances(L1, L2):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--graphs",
+        "--graphs_dir",
         type=str,
-        default=config.OUTPUT_PATH + "graphs/",
         help="Directory pointing to precomputed graphs.",
     )
     parser.add_argument(
         "--year",
         type=int,
-        default="2014",
+        default=2014,
         help="Year of interest. Default is 2014.",
     )
     parser.add_argument(
@@ -79,10 +79,10 @@ if __name__ == "__main__":
     this = sys.modules[__name__]
 
     # Load the data
-    assert os.path.isdir(args.graphs), f"File not found: {args.graphs}"
+    assert os.path.isdir(args.graphs_dir), f"File not found: {args.graphs_dir}"
 
     network_data = load_graphs(
-        args.graphs, feature=args.feature, year=args.year
+        args.graphs_dir, feature=args.feature, year=args.year
     )
 
     print(f"Loaded {len(network_data)} networks.")
@@ -111,11 +111,24 @@ if __name__ == "__main__":
     ).todense()
     M += M.T
 
-    fig, X = plot_phate_embedding(M, n_components=2, knn=10, decay=40, njobs=2)
+    # Plot PHATE Embedding
+    fig, X = plot_phate_embedding(
+        M,
+        n_components=2,
+        knn=10,
+        decay=40,
+        njobs=4,
+        year=args.year,
+        feature=args.feature,
+    )
 
     plt.show()
+    figure_out = os.path.join(
+        config.OUTPUT_PATH,
+        f"figures/phate_embedding_{args.year}_{args.feature}.png",
+    )
+    plt.savefig(figure_out)
 
-    # TODO: Visualize PHATE Embedding of the Data per Year
     # TODO: Implement Set Cover Algorithm
     # TODO: Link prediction based on OR feature distribution (sampling)
     # TODO: Link prediction based on maximal move towards most similar "affluent representative"
