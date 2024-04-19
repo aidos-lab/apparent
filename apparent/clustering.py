@@ -7,61 +7,41 @@ import sys
 import numpy as np
 import itertools
 from scipy.sparse import coo_array
-from scipy.cluster.hierarchy import dendrogram
-from sklearn.cluster import AgglomerativeClustering
+import random
 import matplotlib.pyplot as plt
+from sklearn.cluster import AgglomerativeClustering
 
+import config
 from topology import calculate_persistence_diagrams
-from utils import make_node_filtration
-
-
-def plot_dendrogram(model, ids):
-    counts = np.zeros(model.children_.shape[0])
-    n_samples = len(model.labels_)
-    for i, merge in enumerate(model.children_):
-        current_count = 0
-        for child_idx in merge:
-            if child_idx < n_samples:
-                current_count += 1  # leaf node
-            else:
-                current_count += counts[child_idx - n_samples]
-        counts[i] = current_count
-
-    linkage_matrix = np.column_stack(
-        [model.children_, model.distances_, counts]
-    ).astype(float)
-
-    dendrogram(
-        linkage_matrix,
-        labels=ids,
-    )
-    # Plot dendrogram
-    plt.title("2014 Sample Physician Referral Networks")
-    plt.xlabel("hsanum")
-    plt.ylabel("Curvature Filtrations Distance")
-    plt.show()
+from utils import (
+    make_node_filtration,
+    load_graphs,
+    plot_phate_embedding,
+)
 
 
 def fit_landscapes(
-    data: pd.DataFrame, id_col: str = "hsanum", curvature_col: str = "OR_0.0"
+    data: dict,
+    id_col: str = "hsanum",
+    filtration: str = "OR_0",
 ):
-
-    graphs = data["G"]
-    curvatures = data[curvature_col]
-
-    iterator = dict(
-        zip(
-            data[id_col],
-            zip(graphs, curvatures),
-        )
-    )
     landscapes = {}
-    for id_, (G, curvature) in iterator.items():
+    for network_id in data:
+        G = data[network_id]["graph"]
+        curvature = data[network_id][filtration]
         if curvature is None:
             continue
         G = make_node_filtration(G, curvature, attribute_name="curvature")
+
         dgm = calculate_persistence_diagrams(G, "curvature", "curvature")
-        landscapes[id_] = {i: D.fit_landscape() for i, D in enumerate(dgm)}
+        try:
+            landscapes[network_id] = {
+                i: D.fit_landscape() for i, D in enumerate(dgm)
+            }
+        except Exception as e:
+            print(f"Error fitting landscape for {network_id}: {e}")
+            print(dgm)
+            print()
     return landscapes
 
 
@@ -77,26 +57,37 @@ def pairwise_landscape_distances(L1, L2):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--input",
+        "--graphs",
         type=str,
-        help="Input CSV file",
+        default=config.OUTPUT_PATH + "graphs/",
+        help="Directory pointing to precomputed graphs.",
     )
     parser.add_argument(
-        "--curvature",
+        "--year",
+        type=int,
+        default="2014",
+        help="Year of interest. Default is 2014.",
+    )
+    parser.add_argument(
+        "--feature",
         type=str,
-        default="OR_0.0",
-        help="Column Label for Curvature Filtration",
+        default="OR_0",
+        help="Column Label for Graph Feature of interest.",
     )
 
     args = parser.parse_args()
     this = sys.modules[__name__]
 
     # Load the data
-    assert os.path.isfile(args.input), f"File not found: {args.input}"
-    data = pd.read_pickle(args.input)
+    assert os.path.isdir(args.graphs), f"File not found: {args.graphs}"
 
+    network_data = load_graphs(
+        args.graphs, feature=args.feature, year=args.year
+    )
+
+    print(f"Loaded {len(network_data)} networks.")
     # Fit the landscapes
-    descriptors = fit_landscapes(data, curvature_col=args.curvature)
+    descriptors = fit_landscapes(network_data, filtration=args.feature)
 
     ids = list(descriptors.keys())
     landscapes = list(descriptors.values())
@@ -120,18 +111,11 @@ if __name__ == "__main__":
     ).todense()
     M += M.T
 
-    clustering_model = AgglomerativeClustering(
-        metric="precomputed",
-        linkage="complete",
-        compute_distances=True,
-        distance_threshold=None,
-        n_clusters=3,
-    )
-    clustering_model.fit(M)
+    fig, X = plot_phate_embedding(M, n_components=2, knn=10, decay=40, njobs=2)
 
-    plot_dendrogram(clustering_model, ids)
+    plt.show()
 
     # TODO: Visualize PHATE Embedding of the Data per Year
     # TODO: Implement Set Cover Algorithm
-    # TODO: Link prediction based on OR curvature distribution (sampling)
+    # TODO: Link prediction based on OR feature distribution (sampling)
     # TODO: Link prediction based on maximal move towards most similar "affluent representative"

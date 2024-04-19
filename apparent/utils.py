@@ -4,6 +4,80 @@ import collections
 
 import networkx as nx
 import numpy as np
+import os
+import pickle
+import re
+
+import matplotlib.pyplot as plt
+
+import phate
+from scipy.cluster.hierarchy import dendrogram
+
+
+def load_graphs(path: str, feature: str = "OR_0", year: int = 2014):
+    """Load Graphs basde on a specified year AND whether or not desired features
+    have been precomputed."""
+    graphs = dict()
+    for file in os.listdir(path):
+        if file.endswith(".pkl"):
+            with open(os.path.join(path, file), "rb") as f:
+                data = pickle.load(f)
+            # if data["year"] == year and feature in data.keys():
+            if feature in data.keys():
+                # Extract the integer from the file name
+                idx = int(re.search(r"\d+", file).group())
+                # Assign the extracted integer to the 'hsanum' key in the 'data' dictionary
+                graphs[idx] = data
+    return graphs
+
+
+def plot_phate_embedding(
+    distance_matrix, n_components=2, knn=10, decay=40, njobs=1
+):
+    """Plot and Clusterusing PHATE."""
+    phate_operator = phate.PHATE(
+        n_components=n_components,
+        knn=knn,
+        decay=decay,
+        knn_dist="precomputed",
+        n_jobs=njobs,
+    )
+    phate_embedding = phate_operator.fit_transform(distance_matrix)
+    clusters = phate.cluster.kmeans(phate_operator, n_clusters="auto")
+
+    fig = phate.plot.scatter2d(
+        phate_operator,
+        c=clusters,
+        title="PHATE Embedding of Physician Referral Networks",
+    )
+    return fig, phate_embedding
+
+
+def plot_dendrogram(model, ids):
+    counts = np.zeros(model.children_.shape[0])
+    n_samples = len(model.labels_)
+    for i, merge in enumerate(model.children_):
+        current_count = 0
+        for child_idx in merge:
+            if child_idx < n_samples:
+                current_count += 1  # leaf node
+            else:
+                current_count += counts[child_idx - n_samples]
+        counts[i] = current_count
+
+    linkage_matrix = np.column_stack(
+        [model.children_, model.distances_, counts]
+    ).astype(float)
+
+    dendrogram(
+        linkage_matrix,
+        labels=ids,
+    )
+    # Plot dendrogram
+    plt.title("2014 Sample Physician Referral Networks")
+    plt.xlabel("hsanum")
+    plt.ylabel("Curvature Filtrations Distance")
+    plt.show()
 
 
 def propagate_node_attribute_to_edges(G, attribute, pooling_fn=max):
