@@ -110,9 +110,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-d",
-        "--data",
+        "--graphs_dir",
         type=str,
-        default="nx_networks_undirected_local_hsa.pkl",
         help="Dataset.",
     )
 
@@ -123,12 +122,7 @@ if __name__ == "__main__":
         default="OR",
         help="Type of curvature to compute.",
     )
-    parser.add_argument(
-        "--sample_size",
-        type=int,
-        default=100,
-        help="Number of rows to process.",
-    )
+
     parser.add_argument(
         "--alpha",
         type=float,
@@ -142,23 +136,21 @@ if __name__ == "__main__":
         default=None,
         help="Probability function for ollivier-ricci computation.",
     )
-    parser.add_argument(
-        "-s",
-        "--save",
-        action="store_true",
-        help="Save results by using `-s`.",
-    )
 
     args = parser.parse_args()
     this = sys.modules[__name__]
 
     # Read data from pickle file
-    files = config.OUTPUT_PATH + "graphs/"
+    print("Graphs Directory: ", args.graphs_dir)
+    assert os.path.exists(args.graphs_dir), f"Path not found: {args.graphs_dir}"
 
-    assert os.path.exists(files), f"Path not found: {files}"
+    files = os.listdir(args.graphs_dir)
 
-    for file in os.listdir(files):
-        file = os.path.join(files, file)
+    # Sort the files
+    sorted(files)
+
+    for file in files:
+        file = os.path.join(args.graphs_dir, file)
         print("Computing Curvature for file: ", file)
         if file.endswith(".pkl"):
             with open(file, "rb") as r:
@@ -167,5 +159,3 @@ if __name__ == "__main__":
             with open(file, "wb") as w:
                 pickle.dump(result, w)
                 continue
-
-    print(f"New Column Added: {label}")

@@ -22,8 +22,7 @@ def load_graphs(path: str, feature: str = "OR_0", year: int = 2014):
         if file.endswith(".pkl"):
             with open(os.path.join(path, file), "rb") as f:
                 data = pickle.load(f)
-            # if data["year"] == year and feature in data.keys():
-            if feature in data.keys():
+            if data["year"] == year and feature in data.keys():
                 # Extract the integer from the file name
                 idx = int(re.search(r"\d+", file).group())
                 # Assign the extracted integer to the 'hsanum' key in the 'data' dictionary
@@ -32,7 +31,13 @@ def load_graphs(path: str, feature: str = "OR_0", year: int = 2014):
 
 
 def plot_phate_embedding(
-    distance_matrix, n_components=2, knn=10, decay=40, njobs=1
+    distance_matrix,
+    n_components=2,
+    knn=10,
+    decay=40,
+    njobs=1,
+    year=2014,
+    feature="OR_0",
 ):
     """Plot and Clusterusing PHATE."""
     phate_operator = phate.PHATE(
@@ -48,8 +53,11 @@ def plot_phate_embedding(
     fig = phate.plot.scatter2d(
         phate_operator,
         c=clusters,
-        title="PHATE Embedding of Physician Referral Networks",
+        title=f"{year} Physician Referral Networks: Measured by {feature}",
     )
+    plt.xlabel("PHATE 1")
+    plt.ylabel("PHATE 2")
+
     return fig, phate_embedding
 
 
