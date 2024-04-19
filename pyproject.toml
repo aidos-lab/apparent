@@ -22,6 +22,7 @@ scipy = "^1.13.0"
 scikit-learn = "^1.4.2"
 gudhi = "^3.9.0"
 phate = "^1.0.11"
+pot = "^0.9.3"
 
 [tool.black]
 line-length = 79
