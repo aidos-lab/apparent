@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "doc-orc"
+name = "apparent"
 version = "0.1.0"
-description = "Analyzing Physician Networks via Ollivier Ricci Curvature"
+description = "Analyzing Physician-Patient Referral Networks"
 authors = ["jeremy.wayland <jeremy.don.wayland@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "doc_orc"}]
+packages = [{include = "apparent"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -18,6 +18,10 @@ pygit2 = "^1.11.1"
 dvc-ssh = "^2.21.0"
 dvc-gdrive = "^2.19.1"
 swifter = "^1.4.0"
+scipy = "^1.13.0"
+scikit-learn = "^1.4.2"
+gudhi = "^3.9.0"
+phate = "^1.0.11"
 
 [tool.black]
 line-length = 79

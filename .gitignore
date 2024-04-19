@@ -5,6 +5,7 @@ __pycache__
 
 notebooks/
 scripts/log_files/
+scripts/save_graphs.py
 data/*.pkl
 data/*.gz
 outputs/
