@@ -8,12 +8,14 @@ import config
 import pandas as pd
 
 import pickle
-import swifter
 from curvature import (
     forman_curvature,
     ollivier_ricci_curvature,
     resistance_curvature,
 )
+
+from utils import load_graphs
+from tqdm import tqdm
 
 
 def format_column_labels(args):
@@ -101,8 +103,6 @@ def add_curvature_feature(feature_dict, args):
             alpha=args.alpha,
             prob_fn=args.prob_fn,
         )
-    else:
-        print(f"{label} feature is already computed!.")
     return feature_dict
 
 
@@ -112,7 +112,14 @@ if __name__ == "__main__":
         "-d",
         "--graphs_dir",
         type=str,
+        default=config.OUTPUT_PATH + "graphs/",
         help="Dataset.",
+    )
+    parser.add_argument(
+        "--year",
+        type=int,
+        default=2017,
+        help="Year in the dataset.",
     )
 
     parser.add_argument(
@@ -140,22 +147,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
     this = sys.modules[__name__]
 
-    # Read data from pickle file
-    print("Graphs Directory: ", args.graphs_dir)
-    assert os.path.exists(args.graphs_dir), f"Path not found: {args.graphs_dir}"
+    # Load all graphs from given year
+    graphs = load_graphs(args.graphs_dir, year=args.year, feature="year")
 
-    files = os.listdir(args.graphs_dir)
-
-    # Sort the files
-    sorted(files)
-
-    for file in files:
-        file = os.path.join(args.graphs_dir, file)
-        print("Computing Curvature for file: ", file)
-        if file.endswith(".pkl"):
-            with open(file, "rb") as r:
-                feature_dict = pickle.load(r)
-            result = add_curvature_feature(feature_dict, args)
-            with open(file, "wb") as w:
-                pickle.dump(result, w)
-                continue
+    for key, data in tqdm(
+        graphs.items(), desc="Computing Curvature", unit="graph"
+    ):
+        file = os.path.join(args.graphs_dir, f"graph_{key}.pkl")
+        assert os.path.exists(file), f"Path not found: {file}"
+        updated_features = add_curvature_feature(data, args)
+        with open(file, "wb") as w:
+            pickle.dump(updated_features, w)
