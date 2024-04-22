@@ -22,7 +22,6 @@ from utils import (
 
 def fit_landscapes(
     data: dict,
-    id_col: str = "hsanum",
     filtration: str = "OR_0",
 ):
     landscapes = {}
@@ -65,8 +64,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--year",
         type=int,
-        default=2014,
-        help="Year of interest. Default is 2014.",
+        default=2017,
+        help="Year of interest. Default is 2017.",
     )
     parser.add_argument(
         "--feature",
