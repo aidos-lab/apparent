@@ -187,7 +187,7 @@ def ollivier_ricci_curvature(G, alpha=0.0, weight=None, prob_fn=None):
         mi = measures[node_to_index[source]]
         mj = measures[node_to_index[target]]
 
-        distance = ot.emd2(mi, mj, M)
+        distance = ot.emd2(mi, mj, M, numThreads="max")
         curvature.append(1.0 - distance)
 
     return np.asarray(curvature)
