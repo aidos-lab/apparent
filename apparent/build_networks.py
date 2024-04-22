@@ -54,6 +54,9 @@ if __name__ == "__main__":
         )
     )
     print("Assigning additional graph features...")
+
+    # TODO: Remove and add to compute features script
+    # ALso would like a separate script to combine geographical/medicare data
     df = df.assign(
         nnodes=df["graph"].swifter.apply(nx.number_of_nodes),
         nedges=df["graph"].swifter.apply(nx.number_of_edges),
@@ -63,10 +66,11 @@ if __name__ == "__main__":
         ),
     )
 
-    out_file = os.path.join(config.OUTPUT_PATH, "saved_networks.pkl")
+    compact_df = df.drop(columns=["graph"])
+    out_file = os.path.join(config.OUTPUT_PATH, "networks_data.pkl")
     print(f"Saving networks to {out_file}")
     with open(out_file, "wb") as f:
-        pickle.dump(df, f)
+        pickle.dump(compact_df, f)
     print("----------------------------------")
     print(f"File stats: Num_graphs={len(df)}")
     print("Pickling individual graphs...")
@@ -101,3 +105,4 @@ if __name__ == "__main__":
         with open(out_file, "wb") as f:
             pickle.dump(data, f)
     print("Finished pickling individual graphs!")
+    sys.exit(0)
