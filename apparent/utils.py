@@ -14,7 +14,7 @@ import phate
 from scipy.cluster.hierarchy import dendrogram
 
 
-def load_graphs(path: str, feature: str = "OR_0", year: int = 2014):
+def load_graphs(path: str, feature: str = "OR_0", year: int = 2014) -> dict:
     """Load Graphs basde on a specified year AND whether or not desired features
     have been precomputed."""
     graphs = dict()
@@ -25,7 +25,7 @@ def load_graphs(path: str, feature: str = "OR_0", year: int = 2014):
             if data["year"] == year and feature in data.keys():
                 # Extract the integer from the file name
                 idx = int(re.search(r"\d+", file).group())
-                # Assign the extracted integer to the 'hsanum' key in the 'data' dictionary
+                # Use file id as key
                 graphs[idx] = data
     return graphs
 

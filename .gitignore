@@ -8,6 +8,7 @@ scripts/log_files/
 scripts/save_graphs.py
 data/*.pkl
 data/*.gz
+data/*xlsx
 outputs/
 .vscode/
 .venv/
