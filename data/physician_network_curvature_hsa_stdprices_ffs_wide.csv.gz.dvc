@@ -1,4 +1,0 @@
-outs:
-- md5: 3c9dac81ab8a8a13994659e345f6cd5d
-  size: 3069973
-  path: /lustre/groups/rieck/datasets/PhysicianNetworks/physician_network_curvature_hsa_stdprices_ffs_wide.csv.gz
