@@ -3,6 +3,7 @@ figures/
 scripts/
 data/
 outputs/
+notes.md
 
 *.ipynb_checkpoints
 __pycache__
