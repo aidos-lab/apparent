@@ -9,7 +9,6 @@ def fetch_data_from_sql(base_url, sql_query):
 
         # Construct the full URL
         url = f"{base_url}?sql={encoded_query}"
-        print(url)
 
         # Fetch data using pandas
         df = pd.read_csv(url)

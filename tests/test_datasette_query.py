@@ -2,17 +2,15 @@ import pytest
 import os
 import pandas as pd
 import networkx as nx
-from dotenv import load_dotenv
 
 from apparent.query import fetch_data_from_sql
+from apparent.config import URL
 from apparent.build_networks import build_network
 from apparent.curvature import forman_curvature
 
 
 class TestDatasette:
-    def test_local(self):
-        load_dotenv()
-        D = os.getenv("DATASETTE_URL")
+    def test_query(self):
         sql_query = """
           SELECT
             hospital_atlas_data.hsaname,
@@ -34,12 +32,18 @@ class TestDatasette:
             JOIN population_census ON hospital_atlas_data.hsa = population_census.hsa
             AND hospital_atlas_data.year = population_census.year
           WHERE
-            hospital_atlas_data.year = 2017;
+            hospital_atlas_data.year = 2017
+          LIMIT
+            100;
           """
 
-        edges_df = fetch_data_from_sql(D, sql_query)
+        edges_df = fetch_data_from_sql(URL, sql_query)
+        assert isinstance(edges_df, pd.DataFrame)
+        assert edges_df.shape[0] == 100
+        assert edges_df.shape[1] == 12
 
-        print(edges_df.head())
+    def test_build_networks(self):
+        pass
 
 
 # df = edges_df[["hsanum", "year"]].drop_duplicates(keep="first")
