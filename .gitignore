@@ -3,8 +3,10 @@ __pycache__
 *.DS_Store
 
 
-scripts/log_files/
-scripts/save_graphs.py
+notebooks/
+figures/
+scripts/
+
 data/*.pkl
 data/*.gz
 data/*xlsx
@@ -12,3 +14,4 @@ outputs/
 .vscode/
 .venv/
 *.pytest_cache/
+
