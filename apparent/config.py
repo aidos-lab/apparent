@@ -1,2 +1,2 @@
-DATA_PATH = "../data/"
-OUTPUT_PATH = "../outputs/"
+DATA_PATH = "./data/"
+OUTPUT_PATH = "./outputs/"

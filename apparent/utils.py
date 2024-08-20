@@ -14,7 +14,13 @@ import phate
 from scipy.cluster.hierarchy import dendrogram
 
 
-def load_graphs(path: str, feature: str = "OR_0", year: int = 2014) -> dict:
+def convert_np_array(column):
+    return column.apply(
+        lambda x: x.tolist() if isinstance(x, np.ndarray) else x
+    )
+
+
+def load_graphs(path: str, feature: str = "OR_0") -> dict:
     """Load Graphs basde on a specified year AND whether or not desired features
     have been precomputed."""
     graphs = dict()
@@ -22,7 +28,7 @@ def load_graphs(path: str, feature: str = "OR_0", year: int = 2014) -> dict:
         if file.endswith(".pkl"):
             with open(os.path.join(path, file), "rb") as f:
                 data = pickle.load(f)
-            if data["year"] == year and feature in data.keys():
+            if feature in data.keys():
                 # Extract the integer from the file name
                 idx = int(re.search(r"\d+", file).group())
                 # Use file id as key
