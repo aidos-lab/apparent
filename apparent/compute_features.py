@@ -3,19 +3,17 @@
 import argparse
 import os
 import sys
-
-import config
 import pandas as pd
-
 import pickle
-from curvature import (
+from tqdm import tqdm
+import networkx as nx
+
+from apparent.curvature import (
     forman_curvature,
     ollivier_ricci_curvature,
     resistance_curvature,
 )
-
-from utils import load_graphs
-from tqdm import tqdm
+import apparent.config as config
 
 
 def format_column_labels(args):
@@ -115,18 +113,12 @@ if __name__ == "__main__":
         default=config.OUTPUT_PATH + "graphs/",
         help="Dataset.",
     )
-    parser.add_argument(
-        "--year",
-        type=int,
-        default=2017,
-        help="Year in the dataset.",
-    )
 
     parser.add_argument(
         "-c",
         "--curvature",
         type=str,
-        default="OR",
+        default="Forman",
         help="Type of curvature to compute.",
     )
 
@@ -147,14 +139,31 @@ if __name__ == "__main__":
     args = parser.parse_args()
     this = sys.modules[__name__]
 
-    # Load all graphs from given year
-    graphs = load_graphs(args.graphs_dir, year=args.year, feature="year")
+    # Load all graphs from given folder
 
-    for key, data in tqdm(
-        graphs.items(), desc="Computing Curvature", unit="graph"
-    ):
-        file = os.path.join(args.graphs_dir, f"graph_{key}.pkl")
-        assert os.path.exists(file), f"Path not found: {file}"
-        updated_features = add_curvature_feature(data, args)
-        with open(file, "wb") as w:
-            pickle.dump(updated_features, w)
+    for FILE in tqdm(os.listdir(args.graphs_dir), desc="Calculating Features"):
+        if FILE.endswith(".pkl"):
+            with open(os.path.join(args.graphs_dir, FILE), "rb") as f:
+                data = pickle.load(f)
+            G = data["graph"]
+
+            assortativity = nx.degree_assortativity_coefficient(G)
+
+            # Compute centrality (let's use degree centrality as an example)
+            centrality = nx.degree_centrality(G)
+
+            # Compute average clustering coefficient
+            average_clustering = nx.average_clustering(G)
+            density = nx.density(G)
+
+            # Update the data dictionary
+            data.update(
+                {
+                    "assortativity": assortativity,
+                    "centrality": centrality,
+                    "average_clustering": average_clustering,
+                    "density": density,
+                }
+            )
+            with open(os.path.join(args.graphs_dir, FILE), "wb") as f:
+                pickle.dump(data, f)
