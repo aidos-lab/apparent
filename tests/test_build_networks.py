@@ -4,7 +4,7 @@ import pandas as pd
 import networkx as nx
 import pytest
 
-from apparent.build_networks import build_network
+from apparent.build import build_network
 
 
 @pytest.fixture

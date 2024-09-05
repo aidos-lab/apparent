@@ -1,11 +1,11 @@
 import pytest
 import os
-import pandas as pd
+import polars as pl
 import networkx as nx
 
-from apparent.query import fetch_data_from_sql
+from apparent.utils import fetch_data_from_sql
 from apparent.config import URL
-from apparent.build_networks import build_network
+from apparent.build import build_network
 from apparent.curvature import forman_curvature
 
 
@@ -36,9 +36,8 @@ class TestDatasette:
           LIMIT
             100;
           """
-
         edges_df = fetch_data_from_sql(URL, sql_query)
-        assert isinstance(edges_df, pd.DataFrame)
+        assert isinstance(edges_df, pl.DataFrame)
         assert edges_df.shape[0] == 100
         assert edges_df.shape[1] == 12
 

@@ -7,96 +7,6 @@ import networkx as nx
 import numpy as np
 
 
-def _forman_curvature_unweighted(G):
-    curvature = []
-    for edge in G.edges():
-
-        source, target = edge
-        source_degree = G.degree(source)
-        target_degree = G.degree(target)
-
-        source_neighbours = set(G.neighbors(source))
-        target_neighbours = set(G.neighbors(target))
-
-        n_triangles = len(source_neighbours.intersection(target_neighbours))
-        curvature.append(
-            float(4 - source_degree - target_degree + 3 * n_triangles)
-        )
-
-    return np.asarray(curvature)
-
-
-def _forman_curvature_weighted(G, weight):
-    has_node_attributes = bool(nx.get_node_attributes(G, weight))
-
-    curvature = []
-    for edge in G.edges:
-        source, target = edge
-        source_weight, target_weight = 1.0, 1.0
-
-        # Makes checking for duplicate edges easier below. We expect the
-        # source vertex to be the (lexicographically) smaller one.
-        if source > target:
-            source, target = target, source
-
-        if has_node_attributes:
-            source_weight = G.nodes[source][weight]
-            target_weight = G.nodes[target][weight]
-
-        edge_weight = G[source][target][weight]
-
-        e_curvature = source_weight / edge_weight
-        e_curvature += target_weight / edge_weight
-
-        parallel_edges = list(G.edges(source, data=weight)) + list(
-            G.edges(target, data=weight)
-        )
-
-        for u, v, w in parallel_edges:
-            if u > v:
-                u, v = v, u
-
-            if (u, v) == edge:
-                continue
-            else:
-                e_curvature -= w / np.sqrt(edge_weight * w)
-
-        e_curvature *= edge_weight
-        curvature.append(float(e_curvature))
-
-    return np.asarray(curvature)
-
-
-def forman_curvature(G, weight=None):
-    """Calculate Forman--Ricci curvature of a graph.
-
-    This function calculates the Forman--Ricci curvature of a graph,
-    optionally taking (positive) node and edge weights into account.
-
-    Parameters
-    ----------
-    G : networkx.Graph
-        Input graph
-
-    weight : str or None
-        Name of an edge attribute that is supposed to be used as an edge
-        weight. Will use the same attribute to look up node weights. If
-        None, unweighted curvature is calculated.
-
-    Returns
-    -------
-    np.array
-        An array of edge curvature values, following the ordering of
-        edges of `G`.
-    """
-    # This calculation is much more efficient than the weighted one, so
-    # we default to it in case there are no weights in the graph.
-    if weight is None:
-        return _forman_curvature_unweighted(G)
-    else:
-        return _forman_curvature_weighted(G, weight)
-
-
 def ollivier_ricci_curvature(G, alpha=0.0, weight=None, prob_fn=None):
     """Calculate Ollivier--Ricci curvature of a graph.
 
@@ -339,5 +249,129 @@ def resistance_curvature(G, weight=None):
             / R[node_to_index[source], node_to_index[target]]
         )
         curvature.append(edge_curvature)
+
+    return np.asarray(curvature)
+
+
+def forman_curvature(G, weight=None):
+    """Calculate Forman--Ricci curvature of a graph.
+
+    This function calculates the Forman--Ricci curvature of a graph,
+    optionally taking (positive) node and edge weights into account.
+
+    Parameters
+    ----------
+    G : networkx.Graph
+        Input graph
+
+    weight : str or None
+        Name of an edge attribute that is supposed to be used as an edge
+        weight. Will use the same attribute to look up node weights. If
+        None, unweighted curvature is calculated.
+
+    Returns
+    -------
+    np.array
+        An array of edge curvature values, following the ordering of
+        edges of `G`.
+    """
+    # This calculation is much more efficient than the weighted one, so
+    # we default to it in case there are no weights in the graph.
+    if weight is None:
+        return _forman_curvature_unweighted(G)
+    else:
+        return _forman_curvature_weighted(G, weight)
+
+
+def _forman_curvature_unweighted(G):
+    """Calculate Forman--Ricci curvature of an unweighted graph.
+
+    This function calculates the Forman--Ricci curvature of an unweighted graph.
+
+    Parameters
+    ----------
+    G : networkx.Graph
+        Input graph
+
+    Returns
+    -------
+    np.array
+        An array of edge curvature values, following the ordering of
+        edges of `G`.
+    """
+    curvature = []
+    for edge in G.edges():
+
+        source, target = edge
+        source_degree = G.degree(source)
+        target_degree = G.degree(target)
+
+        source_neighbours = set(G.neighbors(source))
+        target_neighbours = set(G.neighbors(target))
+
+        n_triangles = len(source_neighbours.intersection(target_neighbours))
+        curvature.append(
+            float(4 - source_degree - target_degree + 3 * n_triangles)
+        )
+
+    return np.asarray(curvature)
+
+
+def _forman_curvature_weighted(G, weight):
+    """Calculate Forman--Ricci curvature of a weighted graph.
+
+    This function calculates the Forman--Ricci curvature of a weighted graph.
+
+    Parameters
+    ----------
+    G : networkx.Graph
+        Input graph
+
+    weight : str
+        Name of an edge attribute that is supposed to be used as an edge
+        weight.
+
+    Returns
+    -------
+    np.array
+        An array of edge curvature values, following the ordering of
+        edges of `G`.
+    """
+    has_node_attributes = bool(nx.get_node_attributes(G, weight))
+
+    curvature = []
+    for edge in G.edges:
+        source, target = edge
+        source_weight, target_weight = 1.0, 1.0
+
+        # Makes checking for duplicate edges easier below. We expect the
+        # source vertex to be the (lexicographically) smaller one.
+        if source > target:
+            source, target = target, source
+
+        if has_node_attributes:
+            source_weight = G.nodes[source][weight]
+            target_weight = G.nodes[target][weight]
+
+        edge_weight = G[source][target][weight]
+
+        e_curvature = source_weight / edge_weight
+        e_curvature += target_weight / edge_weight
+
+        parallel_edges = list(G.edges(source, data=weight)) + list(
+            G.edges(target, data=weight)
+        )
+
+        for u, v, w in parallel_edges:
+            if u > v:
+                u, v = v, u
+
+            if (u, v) == edge:
+                continue
+            else:
+                e_curvature -= w / np.sqrt(edge_weight * w)
+
+        e_curvature *= edge_weight
+        curvature.append(float(e_curvature))
 
     return np.asarray(curvature)

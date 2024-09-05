@@ -27,6 +27,7 @@ openpyxl = "^3.1.2"
 jupyterlab = "^4.1.8"
 matplotlib = "^3.8.4"
 seaborn = "^0.13.2"
+polars = "^1.5.0"
 
 [tool.black]
 line-length = 79
