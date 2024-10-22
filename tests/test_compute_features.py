@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import tempfile
 
-from apparent.compute_features import add_curvature_column
+from apparent.features import add_curvature_column
 from tests.test_curvature import _line_graph, _triangle_graph, _tree_graph
 
 

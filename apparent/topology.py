@@ -216,18 +216,6 @@ class PersistenceDiagram(collections.abc.Sequence):
         return np.array([np.array([np.array(pair) for pair in pairs])])
 
 
-def _has_vertex_attribute(graph, attribute):
-    return len(nx.get_node_attributes(graph, attribute)) != 0
-
-
-def _has_edge_attribute(graph, attribute):
-    return len(nx.get_edge_attributes(graph, attribute)) != 0
-
-
-def _mask_infinities(array):
-    return array[array[:, 1] < np.inf]
-
-
 def calculate_persistence_diagrams(
     graph,
     vertex_attribute="f",
@@ -410,3 +398,15 @@ def calculate_persistence_diagrams(
         persistence_diagram_1.add(edge_weights[edge_index], unpaired_value)
 
     return persistence_diagram_0, persistence_diagram_1
+
+
+def _has_vertex_attribute(graph, attribute):
+    return len(nx.get_node_attributes(graph, attribute)) != 0
+
+
+def _has_edge_attribute(graph, attribute):
+    return len(nx.get_edge_attributes(graph, attribute)) != 0
+
+
+def _mask_infinities(array):
+    return array[array[:, 1] < np.inf]
