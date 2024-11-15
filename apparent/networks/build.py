@@ -11,11 +11,37 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
 
-import apparent.config as config
-from apparent.curvature import forman_curvature
-from apparent.utils import convert_np_array
+class NetworkBuilder:
+    pass
 
 
+def build_network(edges_df, hsanum, year):
+    """Create a networkx graph given a dataframe of edges, a region, and year."""
+
+    # initialize an undirected graph G
+    G = nx.Graph()
+
+    # populate G
+    G = nx.from_pandas_edgelist(
+        df=edges_df[(edges_df.hsanum == hsanum) & (edges_df.year == year)],
+        source="npi_a",
+        target="npi_b",
+        edge_attr=["a2b", "b2a"],
+    )
+
+    # sanity check
+    assert G.is_directed() is False
+    assert G.is_multigraph() is False
+
+    return G
+
+
+def process_row(row):
+    A, nodes, curvature = build_network(edges_df, row["hsanum"], row["year"])
+    return pd.Series({"adjacency": A, "nodes": nodes, "curvature": curvature})
+
+
+# Build Graphs
 def build_network(edges_df, hsanum, year):
     """Create a networkx graph given a dataframe of edges, a region, and year."""
 

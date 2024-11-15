@@ -1,9 +1,21 @@
 "Plotting functions for Physician Referral Networks"
-
+import matplotlib.pyplot as plt
 
 # Curvature distributions
 # Embeddings
 # Individual Graphs
+
+
+class NetworkPlotter:
+    pass
+
+
+def plot_network(G, year=2014, feature="OR_0"):
+    pass
+
+
+def plot_curvature_distribution(curvatures, year=2014, feature="OR_0"):
+    pass
 
 
 def plot_phate_embedding(
@@ -16,25 +28,28 @@ def plot_phate_embedding(
     feature="OR_0",
 ):
     """Plot and Clusterusing PHATE."""
-    phate_operator = phate.PHATE(
-        n_components=n_components,
-        knn=knn,
-        decay=decay,
-        knn_dist="precomputed",
-        n_jobs=njobs,
-    )
-    phate_embedding = phate_operator.fit_transform(distance_matrix)
-    clusters = phate.cluster.kmeans(phate_operator, n_clusters="auto")
 
-    fig = phate.plot.scatter2d(
-        phate_operator,
-        c=clusters,
-        title=f"{year} Physician Referral Networks: Measured by {feature}",
-    )
-    plt.xlabel("PHATE 1")
-    plt.ylabel("PHATE 2")
+    # TODO: Phate has too many dependency issues, lets find a better alternative!
+    # phate_operator = phate.PHATE(
+    #     n_components=n_components,
+    #     knn=knn,
+    #     decay=decay,
+    #     knn_dist="precomputed",
+    #     n_jobs=njobs,
+    # )
+    # phate_embedding = phate_operator.fit_transform(distance_matrix)
+    # clusters = phate.cluster.kmeans(phate_operator, n_clusters="auto")
 
-    return fig, phate_embedding
+    # fig = phate.plot.scatter2d(
+    #     phate_operator,
+    #     c=clusters,
+    #     title=f"{year} Physician Referral Networks: Measured by {feature}",
+    # )
+    # plt.xlabel("PHATE 1")
+    # plt.ylabel("PHATE 2")
+
+    # return fig, phate_embedding
+    pass
 
 
 def plot_dendrogram(model, ids):
