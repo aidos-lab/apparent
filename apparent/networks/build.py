@@ -1,102 +1,90 @@
-"""Script for building networks from regional hospital referral information."""
-
 import networkx as nx
-import numpy as np
-import os
-import sys
 import pandas as pd
-import pickle
-import swifter
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from tqdm import tqdm
+from typing import Callable, Optional, Dict
 
 
 class NetworkBuilder:
-    pass
+    """
+    A class for building network graphs from edge data, with support for custom graph-building recipes.
 
+    Parameters
+    ----------
+    custom_build : callable, optional
+        A custom function that accepts the dataframe and additional keyword arguments (`**kwargs`)
+        and returns a NetworkX graph. If not provided, the default `standard_build` method is used.
 
-def build_network(edges_df, hsanum, year):
-    """Create a networkx graph given a dataframe of edges, a region, and year."""
+    Methods
+    -------
+    build(edges_df, **kwargs)
+        Builds a network graph using the selected recipe (default or custom).
+    """
 
-    # initialize an undirected graph G
-    G = nx.Graph()
+    def __init__(
+        self,
+        custom_build: Optional[Callable[[pd.DataFrame, Dict], nx.Graph]] = None,
+    ):
+        """
+        Initialize the NetworkBuilder with a custom build recipe.
 
-    # populate G
-    G = nx.from_pandas_edgelist(
-        df=edges_df[(edges_df.hsanum == hsanum) & (edges_df.year == year)],
-        source="npi_a",
-        target="npi_b",
-        edge_attr=["a2b", "b2a"],
-    )
+        Parameters
+        ----------
+        custom_build : callable, optional
+            A function that accepts `edges_df` (pandas DataFrame) and keyword arguments (`**kwargs`)
+            as input, and returns a NetworkX graph (nx.Graph). If not provided, the default `standard_build`
+            method will be used.
+        """
+        # Use the provided custom build recipe, or default to the standard build if none is provided
+        self.build_recipe = custom_build or self.standard_build
 
-    # sanity check
-    assert G.is_directed() is False
-    assert G.is_multigraph() is False
+    def standard_build(
+        self, edges_df: pd.DataFrame, hsa: int, year: int
+    ) -> nx.Graph:
+        """
+        Default network-building method that creates a NetworkX graph from edge data.
 
-    return G
+        Parameters
+        ----------
+        edges_df : pd.DataFrame
+            A pandas DataFrame containing the edges with columns `npi_a`, `npi_b`,
+            `hsa`, `year`, `a2b`, and `b2a`.
+        hsa : int
+            The region code (Hsa) to filter the network.
+        year : int
+            The year to filter the network.
 
+        Returns
+        -------
+        nx.Graph
+            An undirected NetworkX graph built from the edge data.
+        """
+        # Initialize an undirected graph G
+        G = nx.Graph()
 
-def process_row(row):
-    A, nodes, curvature = build_network(edges_df, row["hsanum"], row["year"])
-    return pd.Series({"adjacency": A, "nodes": nodes, "curvature": curvature})
+        # Populate G using the filtered DataFrame
+        G = nx.from_pandas_edgelist(
+            df=edges_df[(edges_df.hsa == hsa) & (edges_df.year == year)],
+            source="npi_a",
+            target="npi_b",
+            edge_attr=["a2b", "b2a"],
+        )
 
+        return G
 
-# Build Graphs
-def build_network(edges_df, hsanum, year):
-    """Create a networkx graph given a dataframe of edges, a region, and year."""
+    def build(self, edges_df: pd.DataFrame, **kwargs) -> nx.Graph:
+        """
+        Build the network using the selected recipe (default or custom).
 
-    # initialize an undirected graph G
-    G = nx.Graph()
+        Parameters
+        ----------
+        edges_df : pd.DataFrame
+            A pandas DataFrame containing the edges with columns `npi_a`, `npi_b`,
+            `hsa`, `year`, `a2b`, and `b2a`.
+        **kwargs : dict
+            Additional keyword arguments that can be passed to the custom build function.
 
-    # populate G
-    G = nx.from_pandas_edgelist(
-        df=edges_df[(edges_df.hsanum == hsanum) & (edges_df.year == year)],
-        source="npi_a",
-        target="npi_b",
-        edge_attr=["a2b", "b2a"],
-    )
-
-    # sanity check
-    assert G.is_directed() is False
-    assert G.is_multigraph() is False
-
-    return G
-
-
-def process_row(row):
-    A, nodes, curvature = build_network(edges_df, row["hsanum"], row["year"])
-    return pd.Series({"adjacency": A, "nodes": nodes, "curvature": curvature})
-
-
-if __name__ == "__main__":
-    print("Reading in csv")
-    in_file = (
-        config.DATA_PATH + "network_panel_undirected_local_hsa_edges.csv.gz"
-    )
-
-    edges_df = pd.read_csv(in_file)
-    print("Edge Dataframe read from csv")
-
-    print("Now removing duplicates...")
-    df = edges_df[["hsanum", "year"]].drop_duplicates(keep="first")
-
-    df = df.assign(
-        graph=df.apply(
-            lambda row: build_network(
-                edges_df=edges_df, hsanum=row["hsanum"], year=row["year"]
-            ),
-            axis=1,
-        ),
-    )
-
-    outPath = "/Users/jeremy.wayland/Desktop/dev/apparent/outputs/all_graphs/"
-
-    for index, row in tqdm(df.iterrows(), desc="Rows"):
-        data = {
-            "hsa": row["hsanum"],
-            "year": row["year"],
-            "graph": row["graph"],
-        }
-        outFile = os.path.join(outPath, f"graph_{index}.pkl")
-        with open(outFile, "wb") as f:
-            pickle.dump(data, f)
+        Returns
+        -------
+        nx.Graph
+            The NetworkX graph constructed using the selected recipe.
+        """
+        return self.build_recipe(edges_df, **kwargs)
