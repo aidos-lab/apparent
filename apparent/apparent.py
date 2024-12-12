@@ -8,12 +8,13 @@ from itertools import product
 from typing import Union
 from dotenv import load_dotenv
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 from apparent.networks import (
     NetworkBuilder,
+    NetworkComparator,
     NetworkClusterer,
     NetworkDescriber,
     NetworkEmbedder,
-    NetworkPlotter,
 )
 
 
@@ -32,15 +33,26 @@ class Apparent:
         self.kilt = None  # Initialize a KILT to handle pairwise distances?
 
         self.builder = NetworkBuilder(build_method)
-        self.clusterer = NetworkClusterer(cluster_method)
-        self.describer = NetworkDescriber(features)
-        self.embedder = NetworkEmbedder(embed_method)
-        self.plotter = NetworkPlotter()
+        # self.clusterer = NetworkClusterer(cluster_method)
+        # self.describer = NetworkDescriber(features)
+        # self.plotter = NetworkPlotter()
+
+        self.networks = {}
+        self.distances = {}
 
     def pull(self, sql_query):
+
+        if os.path.isfile(sql_query):
+            sql_query = self._read_query(sql_query)
         self.data = self._fetcher(sql_query)
-        self.hsas = self.data["hsa"].unique().tolist()
-        self.years = self.data["year"].unique().tolist()
+        self.data.sort_values(["hsa", "year"], inplace=True)
+
+        self.network_ids = list(
+            product(
+                self.data["hsa"].unique().tolist(),
+                self.data["year"].unique().tolist(),
+            )
+        )
 
     def download_interactions(self):
         if self.data is None:
@@ -75,20 +87,21 @@ class Apparent:
         if not hasattr(self, "physician_interactions"):
             self.download_interactions()
 
-        # Dictionary to store the resulting networks
         self.networks = {}
-
         # Group by 'hsan' and 'year' to process each unique combination
         grouped_data = self.physician_interactions.groupby(["hsa", "year"])
-
         for (hsa, year), group in grouped_data:
             # Call the builder's `build` method for each HSA/year combination
             graph = self.builder.build(group, hsa=hsa, year=year)
-
-            # Store the resulting graph in the dictionary
             self.networks[(hsa, year)] = graph
 
-    def add_features(self, features: Union[list, dict]):
+        self.data["Networks"] = self.networks.values()
+
+    def add_features(
+        self,
+        node_features=["degree_centrality"],
+        edge_features=["forman_curvature"],
+    ):
         """
         Add specified network features to the networks and update the data.
 
@@ -109,25 +122,16 @@ class Apparent:
             print("No networks available. Please build networks first.")
             return None
 
-        if isinstance(features, list):
-            # Assume all features are node features if a simple list is provided
-            node_features = features
-            edge_features = []
-        elif isinstance(features, dict):
-            # If a dictionary is provided, use it to separate node and edge features
-            node_features = features.get("node_features", [])
-            edge_features = features.get("edge_features", [])
-        else:
-            raise ValueError("Features should be a list or a dictionary.")
+        if node_features is None and edge_features is None:
+            print(
+                "No features specified. Please provide node or edge features."
+            )
+            return None
 
         # List to collect all rows with computed features for updating the main data
         feature_rows = []
 
-        # Rebuild `self.networks` with graphs containing the features
-        updated_networks = {}
-
         for (hsanum, year), graph in self.networks.items():
-            print(f"Adding features for network (HSA: {hsanum}, Year: {year})")
 
             # Initialize NetworkDescriber for the current graph
             describer = NetworkDescriber(graph)
@@ -137,72 +141,79 @@ class Apparent:
                 node_features=node_features, edge_features=edge_features
             )
 
-            # Add features to the graph as attributes
-            features_dict = describer.get_features()
-
-            # Update node features
-            for feature, values in features_dict.items():
-                if feature in node_features:
-                    nx.set_node_attributes(graph, values, name=feature)
-                elif feature in edge_features:
-                    nx.set_edge_attributes(graph, values, name=feature)
-
             # Update the `updated_networks` dictionary with the modified graph
-            updated_networks[(hsanum, year)] = graph
+            self.networks[(hsanum, year)] = describer.G
 
-            # Extract node features and add HSA/year info
-            for node, data in graph.nodes(data=True):
-                feature_row = {"hsanum": hsanum, "year": year, "node": node}
-                feature_row.update(data)
-                feature_rows.append(feature_row)
-
-        # Reassign `self.networks` to contain graphs with features
-        self.networks = updated_networks
-
-        # Create a DataFrame from the collected feature rows
-        feature_data = pd.DataFrame(feature_rows)
-
-        # Merge the features back into the original data, if possible
-        if "node" in self.data.columns:
-            self.data = pd.merge(
-                self.data,
-                feature_data,
-                on=["hsanum", "year", "node"],
-                how="left",
-            )
-        else:
-            self.data = self.data.merge(
-                feature_data, on=["hsanum", "year"], how="left"
-            )
-
-        print("Features successfully added to the networks and data.")
-        return self.data
+        self.data["Networks"] = self.networks.values()
 
     def compare(
-        self, HSA1, HSA2, measure="forman_curvature", **kwargs
+        self,
+        measure="forman_curvature",
+        **kwargs,
     ) -> Union[float, np.array]:
-        # READ networks from self.data
-        # Fit Filtrations with KILT and return float
-        pass
+        self.comparator = NetworkComparator(self.networks.values())
+        # if we already have curvature features, lets get these and pass these!
+        if measure not in self.distances:
+            D = self.comparator.compare(measure=measure, **kwargs)
+            self.distances.update({measure: D})
+        # Generate a pairwise distance matrix for the networks
 
-    def embed_networks(self):
-        # TODO: Pairwise distances between networks using KILT
-        # TODO: Embed networks via TSNE or other method
-        pass
+    def embed(self, measure="forman_curvature"):
+        if measure not in self.distances:
+            print(
+                f"No pairwise distance computed yet for {measure}. Computing now..."
+            )
+            self.compare(measure=measure)
 
-    def cluster_networks(self):
-        pass
+        D = self.distances[measure]
+        self.embedder = NetworkEmbedder(pairwise_distances=D)
+        self.embedding = self.embedder.embed()
 
-    def plot_network(self, network_ids):
-        # TODO: plot graph(s)
-        pass
+    def cluster_networks(self, measure="forman_curvature", clusterer=None):
+        if measure not in self.distances:
+            print(
+                f"No pairwise distance computed yet for {measure}. Computing now..."
+            )
+            self.compare(measure=measure)
+            self.embed(measure=measure)
 
-    def plot_feature_distribution(self, feature):
-        # TODO: Distribution
-        pass
+        assert hasattr(self, "embedding"), "Please embed the networks first."
+
+        self.clusterer = NetworkClusterer(clusterer=clusterer)
+        self.clusterer.fit(pairwise_distances=self.distances[measure])
 
     def plot_embedding(self):
-        pass
+        if not hasattr(self, "embedding"):
+            self.embed()
+        if not hasattr(self, "clusterer"):
+            self.cluster_networks()
+
+        color = self.clusterer.labels_ if hasattr(self, "clusterer") else None
+        unique_clusters = np.unique(color) if color is not None else []
+
+        plt.figure(figsize=(8, 8))
+        scatter = plt.scatter(
+            self.embedding[:, 0],
+            self.embedding[:, 1],
+            c=color,
+            cmap="Pastel2",
+        )
+
+        # Create legend manually by matching cluster labels to colors
+        if color is not None:
+            handles = []
+            for i in unique_clusters:
+                handles.append(
+                    plt.scatter(
+                        [],
+                        [],
+                        color=scatter.cmap(scatter.norm(i)),
+                        label=f"Cluster {i}",
+                    )
+                )
+            plt.legend(handles=handles, title="Clusters")
+
+        plt.show()
 
     def _fetcher(self, sql_query) -> pd.DataFrame:
         df = pd.DataFrame()
@@ -243,7 +254,7 @@ class Apparent:
     def _batch_interaction_queries(self):
         queries = []
 
-        for hsa, year in product(self.hsas, self.years):
+        for hsa, year in self.network_ids:
             query = f"""
                 SELECT * FROM local_physician_interactions
                 WHERE hsa = {int(hsa)} AND year = {int(year)};
@@ -251,7 +262,3 @@ class Apparent:
             queries.append(query)
 
         return queries
-
-    def _save_networks(self):
-        # TODO: save indidivual networks to disk? einfach in a dataframe?
-        pass

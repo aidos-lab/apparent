@@ -38,8 +38,13 @@ def max_HSA_query(max_HSA, max_HSA_YEAR):
 
 
 @pytest.fixture
-def sample_query():
-    sql_query = """
+def num_networks():
+    return 2
+
+
+@pytest.fixture
+def sample_query(num_networks):
+    sql_query = f"""
           SELECT
             hospital_atlas_data.hsa,
             hospital_atlas_data.year,
@@ -62,8 +67,16 @@ def sample_query():
             AND hospital_atlas_data.year = population_census.year
           WHERE
             hospital_atlas_data.year = 2017
+            AND
+            referral_network_features.nnodes > 20
+            AND 
+            referral_network_features.nnodes < 100
+            AND 
+            referral_network_features.nedges < 300
+          ORDER BY
+            referral_network_features.nnodes 
           LIMIT
-            5;
+            {num_networks};
           """
     return sql_query
 
@@ -116,3 +129,13 @@ def edges_df2():
             "b2a": [15, 10],  # number of patients from b to a
         }
     )
+
+
+@pytest.fixture
+def test_node_features():
+    return ["pagerank", "degree", "clustering"]
+
+
+@pytest.fixture
+def test_edge_features():
+    return ["edge_betweenness", "forman_curvature"]
