@@ -1,74 +1,125 @@
 import networkx as nx
-
-# KILT
-import sys
-
-sys.path.append("/Users/jeremy.wayland/repos/dev/curvature-filtrations")
-from curvature_filtrations.kilt import KILT, CURVATURE_MEASURES
+from scott.kilt import KILT, CURVATURE_MEASURES
 
 
 class NetworkDescriber:
+    """
+    A class to compute and describe features for a given graph.
 
-    # TODO: Curvature, NetworkX, Cycle Representatives with OatPython
-    pass
-
-
-# Compute Features
-def compute_features(G, node_features, edge_features, **kwargs):
-
-    # TODO: Need to figure out how to pass curvature specific measures to KILT
-    """Compute features for a given graph.
-
-    This function computes features for a given graph. The features
-    are computed based on the node and edge attributes of the graph.
-
-    Parameters
+    Attributes
     ----------
     G : nx.Graph
-        Input graph
-
-    node_features : list
-        List of node features to compute
-
-    edge_features : list
-        List of edge features to compute
-
-    Returns
-    -------
+        Input graph with updated node and edge attributes
     features : dict
         Dictionary containing computed features
     """
-    features = {}
 
-    # Compute node features
-    for feature in node_features:
-        if feature == "degree":
-            features[feature] = dict(G.degree())
-        elif feature == "clustering":
-            features[feature] = nx.clustering(G)
-        elif feature == "betweenness":
-            features[feature] = nx.betweenness_centrality(G)
-        elif feature == "closeness":
-            features[feature] = nx.closeness_centrality(G)
-        elif feature == "pagerank":
-            features[feature] = nx.pagerank(G)
+    def __init__(self, G):
+        """
+        Initialize the NetworkDescriber with a graph.
 
-        else:
-            raise ValueError(f"Unknown node feature: {feature}")
+        Parameters
+        ----------
+        G : nx.Graph
+            Input graph
+        """
+        self.G = G
+        self.features = {}
 
-    # Compute edge features
-    for feature in edge_features:
-        if feature == "edge_betweenness":
-            features[feature] = nx.edge_betweenness_centrality(G)
+    def compute_node_features(self, node_features):
+        """
+        Compute specified node features for the graph and add them as attributes.
 
-        ## CURVATURE
-        elif feature in CURVATURE_MEASURES:
-            # TODO: CHECK kwargs and pass proper ones to KILT
-            kilt = KILT(measure=feature, **kwargs)
-            kilt.fit(G)
-            # Probably a nice getter from nx to get edge/feature dict
-            features[feature] = dict(zip(G.edges(), kilt.curvature))
-        else:
-            raise ValueError(f"Unknown edge feature: {feature}")
+        Parameters
+        ----------
+        node_features : list
+            List of node features to compute
 
-    return features
+        Returns
+        -------
+        None
+        """
+        for feature in node_features:
+            if feature == "degree":
+                values = dict(self.G.degree())
+            elif feature == "clustering":
+                values = nx.clustering(self.G)
+            elif feature == "betweenness":
+                values = nx.betweenness_centrality(self.G)
+            elif feature == "closeness":
+                values = nx.closeness_centrality(self.G)
+            elif feature == "pagerank":
+                values = nx.pagerank(self.G)
+            else:
+                raise ValueError(f"Unknown node feature: {feature}")
+
+            # Add feature to graph nodes
+            nx.set_node_attributes(self.G, values, name=feature)
+            self.features[feature] = values
+
+    def compute_edge_features(self, edge_features, **kwargs):
+        """
+        Compute specified edge features for the graph and add them as attributes.
+
+        Parameters
+        ----------
+        edge_features : list
+            List of edge features to compute
+
+        **kwargs
+            Additional arguments for KILT curvature measures
+
+        Returns
+        -------
+        None
+        """
+        for feature in edge_features:
+            if feature == "edge_betweenness":
+                values = nx.edge_betweenness_centrality(self.G)
+            elif feature in CURVATURE_MEASURES:
+                kilt = KILT(measure=feature, **kwargs)
+                kilt.fit(self.G)
+                values = dict(zip(self.G.edges(), kilt.curvature))
+            else:
+                raise ValueError(f"Unknown edge feature: {feature}")
+
+            # Add feature to graph edges
+            nx.set_edge_attributes(self.G, values, name=feature)
+            self.features[feature] = values
+
+    def compute_features(
+        self, node_features=None, edge_features=None, **kwargs
+    ):
+        """
+        Compute all specified features for the graph and add them as attributes.
+
+        Parameters
+        ----------
+        node_features : list, optional
+            List of node features to compute
+
+        edge_features : list, optional
+            List of edge features to compute
+
+        **kwargs
+            Additional arguments for KILT curvature measures
+
+        Returns
+        -------
+        None
+        """
+        if node_features:
+            self.compute_node_features(node_features)
+        if edge_features:
+            self.compute_edge_features(edge_features, **kwargs)
+
+    def get_features(self):
+        """
+        Retrieve computed features.
+
+        Returns
+        -------
+        dict
+            Dictionary containing computed features
+        """
+        return self.features
