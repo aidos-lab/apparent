@@ -21,13 +21,13 @@ class NetworkClusterer:
         Parameters
         ----------
         clusterer : object, optional
-            A clustering algorithm instance (default: KMeans with 2 clusters).
+            A clustering algorithm instance (default: AgglomerativeClustering with 2 clusters).
 
         **kwargs
             Additional keyword arguments to initialize the default clusterer.
         """
         if clusterer is None:
-            self.model = KMeans(n_clusters=2, **kwargs)
+            self.model = AgglomerativeClustering(n_clusters=2, **kwargs)
         elif isinstance(clusterer, str):
             # Create clustering model by name
             if clusterer.lower() == "kmeans":
