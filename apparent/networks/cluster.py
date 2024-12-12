@@ -1,59 +1,129 @@
-"Clustering Physician Referral Networks."
-
-import pandas as pd
-import os
-import argparse
-import sys
+from sklearn.cluster import AgglomerativeClustering, KMeans, DBSCAN
 import numpy as np
-import itertools
-from scipy.sparse import coo_array
-import random
-import matplotlib.pyplot as plt
-from sklearn.cluster import AgglomerativeClustering
-
-import config
-from topology import calculate_persistence_diagrams
-from utils import (
-    make_node_filtration,
-    load_graphs,
-    plot_phate_embedding,
-)
 
 
 class NetworkClusterer:
-    pass
+    """
+    A class to cluster networks using a pairwise distance matrix or user-provided cluster labels.
 
+    Attributes
+    ----------
+    model : object
+        The clustering model (e.g., KMeans, AgglomerativeClustering, or DBSCAN).
+    labels_ : np.ndarray
+        Cluster labels for each graph.
+    """
 
-# TODO: Suppport different clustering algorithms?
-def fit_landscapes(
-    data: dict,
-    filtration: str = "OR_0",
-):
-    landscapes = {}
-    for network_id in data:
-        G = data[network_id]["graph"]
-        curvature = data[network_id][filtration]
-        if curvature is None:
-            continue
-        G = make_node_filtration(G, curvature, attribute_name="curvature")
+    def __init__(self, clusterer=None, **kwargs):
+        """
+        Initialize the NetworkClusterer.
 
-        dgm = calculate_persistence_diagrams(G, "curvature", "curvature")
-        # TODO: Treat trivial diagrams better
-        try:
-            landscapes[network_id] = {
-                i: D.fit_landscape() for i, D in enumerate(dgm)
-            }
-        except Exception as e:
-            print(f"Error fitting landscape for {network_id}: {e}")
-            print(dgm)
-            print()
-    return landscapes
+        Parameters
+        ----------
+        clusterer : object, optional
+            A clustering algorithm instance (default: KMeans with 2 clusters).
 
+        **kwargs
+            Additional keyword arguments to initialize the default clusterer.
+        """
+        if clusterer is None:
+            self.model = KMeans(n_clusters=2, **kwargs)
+        elif isinstance(clusterer, str):
+            # Create clustering model by name
+            if clusterer.lower() == "kmeans":
+                self.model = KMeans(**kwargs)
+            elif clusterer.lower() == "agglomerative":
+                self.model = AgglomerativeClustering(**kwargs)
+            elif clusterer.lower() == "dbscan":
+                self.model = DBSCAN(**kwargs)
+            else:
+                raise ValueError(
+                    f"Unsupported clustering method '{clusterer}'. Choose from 'kmeans', 'agglomerative', or 'dbscan'."
+                )
+        else:
+            # Assume user provided a clustering model instance
+            self.model = clusterer
 
-def pairwise_landscape_distances(L1, L2):
-    """Compute pairwise distances between landscapes."""
-    diff = dict()
-    for i in L1.keys():
-        diff[i] = L1[i] - L2[i]
-    norms = {k: np.linalg.norm(v) for k, v in diff.items()}
-    return sum(norms.values())
+        self.labels_ = None
+
+    def fit(self, pairwise_distances=None, manual_labels=None):
+        """
+        Fit the clustering model to the pairwise distance matrix, or accept manual labels.
+
+        Parameters
+        ----------
+        pairwise_distances : np.ndarray, optional
+            A symmetric pairwise distance matrix (n x n) between graphs.
+
+        manual_labels : np.ndarray, optional
+            User-defined cluster labels for each graph.
+
+        Returns
+        -------
+        labels_ : np.ndarray
+            Cluster labels for each graph.
+        """
+        # If user provides manual labels, skip clustering and return these labels
+        if manual_labels is not None:
+            if not isinstance(manual_labels, np.ndarray):
+                raise ValueError("manual_labels must be a numpy array.")
+            if manual_labels.ndim != 1:
+                raise ValueError("manual_labels must be a 1D array.")
+            self.labels_ = manual_labels
+            return self.labels_
+
+        # Check if a pairwise distance matrix is provided
+        if pairwise_distances is None:
+            raise ValueError(
+                "pairwise_distances must be provided unless manual_labels are used."
+            )
+
+        # Ensure the distance matrix is a numpy array
+        if not isinstance(pairwise_distances, np.ndarray):
+            raise ValueError("pairwise_distances must be a numpy array.")
+
+        # Ensure the distance matrix is a square symmetric matrix
+        if pairwise_distances.shape[0] != pairwise_distances.shape[1]:
+            raise ValueError("pairwise_distances must be a square matrix.")
+        if not np.allclose(pairwise_distances, pairwise_distances.T, atol=1e-8):
+            raise ValueError("pairwise_distances must be symmetric.")
+
+        # Handle clustering model
+        if hasattr(self.model, "metric") and self.model.metric == "precomputed":
+            self.labels_ = self.model.fit_predict(pairwise_distances)
+        else:
+            # Flatten distance matrix if the clustering method does not support precomputed distances
+            flattened_distances = pairwise_distances
+            if (
+                flattened_distances.ndim == 2
+                and flattened_distances.shape[0] == flattened_distances.shape[1]
+            ):
+                flattened_distances = self._flatten_distance_matrix(
+                    pairwise_distances
+                )
+            self.labels_ = self.model.fit_predict(flattened_distances)
+
+        return self.labels_
+
+    def _flatten_distance_matrix(self, distance_matrix):
+        """
+        Flatten a pairwise distance matrix to a 2D array.
+
+        Some clustering algorithms (like KMeans) require feature vectors rather than distance matrices.
+        This method converts an (n x n) distance matrix into an (n x n-1) feature array by removing diagonal
+        elements and flattening each row.
+
+        Parameters
+        ----------
+        distance_matrix : np.ndarray
+            A symmetric (n x n) distance matrix.
+
+        Returns
+        -------
+        flattened_matrix : np.ndarray
+            A feature array suitable for clustering algorithms that don't support precomputed distances.
+        """
+        n = distance_matrix.shape[0]
+        return distance_matrix[np.arange(n)[:, None] != np.arange(n)].reshape(
+            n, n - 1
+        )
