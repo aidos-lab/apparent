@@ -23,19 +23,10 @@ class Apparent:
     def __init__(
         self,
         base_url=None,
-        build_method=None,
-        cluster_method=None,
-        features=None,
-        embed_method=None,
     ):
         self.base_url = self._load_base_url(base_url)
         self.data = None
         self.kilt = None  # Initialize a KILT to handle pairwise distances?
-
-        self.builder = NetworkBuilder(build_method)
-        # self.clusterer = NetworkClusterer(cluster_method)
-        # self.describer = NetworkDescriber(features)
-        # self.plotter = NetworkPlotter()
 
         self.networks = {}
         self.distances = {}
@@ -74,7 +65,7 @@ class Apparent:
 
         self.physician_interactions = pd.concat(interaction_data)
 
-    def build_networks(self):
+    def build_networks(self, build_method=None):
         """
         Builds networks for each HSA (Health Service Area) in the fetched data.
 
@@ -83,6 +74,7 @@ class Apparent:
         - Uses the selected `build_method` to create a network graph,
         - Stores the resulting graphs in a dictionary with keys as (hsanum, year) tuples.
         """
+        self.builder = NetworkBuilder(build_method)
 
         if not hasattr(self, "physician_interactions"):
             self.download_interactions()
