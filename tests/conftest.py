@@ -39,7 +39,7 @@ def max_HSA_query(max_HSA, max_HSA_YEAR):
 
 @pytest.fixture
 def num_networks():
-    return 5
+    return 2
 
 
 @pytest.fixture

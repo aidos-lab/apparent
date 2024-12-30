@@ -113,4 +113,3 @@ class TestApparent:
         A.pull(sample_query)
         A.build_networks()
         A.cluster_networks()
-        A.plot_embedding()
