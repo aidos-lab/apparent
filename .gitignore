@@ -3,6 +3,7 @@ figures/
 scripts/
 outputs/
 notes.md
+.env
 
 *.ipynb_checkpoints
 __pycache__
@@ -12,4 +13,5 @@ __pycache__
 *.pytest_cache/
 data/us_physician_referral_networks.db
 data/networks.pkl
+
 
