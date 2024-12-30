@@ -8,25 +8,17 @@ readme = "README.md"
 packages = [{include = "apparent"}]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-numpy = "^1.24.2"
-networkx = "^3.0"
-pandas = "^1.5.3"
-black = "^23.1.0"
-dvc = "^2.45.1"
-pygit2 = "^1.11.1"
-dvc-ssh = "^2.21.0"
-dvc-gdrive = "^2.19.1"
+python = "^3.10"
+curvature-filtrations = "^0.1.0"
+pandas = "^2.2.3"
+python-dotenv = "^1.0.1"
+matplotlib = "^3.9.2"
+tqdm = "^4.67.1"
 swifter = "^1.4.0"
-scipy = "^1.13.0"
-scikit-learn = "^1.4.2"
-gudhi = "^3.9.0"
-phate = "^1.0.11"
-pot = "^0.9.3"
-openpyxl = "^3.1.2"
-jupyterlab = "^4.1.8"
-matplotlib = "^3.8.4"
-seaborn = "^0.13.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+dvc = {extras = ["gdrive"], version = "^3.58.0"}
 
 [tool.black]
 line-length = 79
