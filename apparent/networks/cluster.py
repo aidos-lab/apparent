@@ -26,14 +26,21 @@ class NetworkClusterer:
         **kwargs
             Additional keyword arguments to initialize the default clusterer.
         """
+        linkage = kwargs.get("linkage", "average")
+        if linkage == "ward":
+            raise ValueError(
+                "AgglomerativeClustering with 'ward' only works with euclidean distances."
+            )
         if clusterer is None:
-            self.model = AgglomerativeClustering(n_clusters=2, **kwargs)
+            self.model = AgglomerativeClustering(
+                linkage=linkage, n_clusters=2, **kwargs
+            )
         elif isinstance(clusterer, str):
             # Create clustering model by name
             if clusterer.lower() == "kmeans":
                 self.model = KMeans(**kwargs)
             elif clusterer.lower() == "agglomerative":
-                self.model = AgglomerativeClustering(**kwargs)
+                self.model = AgglomerativeClustering(linkage=linkage, **kwargs)
             elif clusterer.lower() == "dbscan":
                 self.model = DBSCAN(**kwargs)
             else:
@@ -42,6 +49,15 @@ class NetworkClusterer:
                 )
         else:
             # Assume user provided a clustering model instance
+            if (
+                hasattr(clusterer, "linkage")
+                and clusterer.metric == "precomputed"
+                and clusterer.linkage == "ward"
+            ):
+                raise ValueError(
+                    "AgglomerativeClustering with 'ward' only works with euclidean distances."
+                )
+
             self.model = clusterer
 
         self.labels_ = None
