@@ -32,21 +32,10 @@ We recommend using [`poetry`](https://python-poetry.org/) as the package manager
 
 ### **Step 1: Clone the Repository**
 
-````bash
-git clone https://github.com/yourusername/apparent.git
-cd apparent
----
-
-## ⚙️ **Installation**
-
-We recommend using [`poetry`](https://python-poetry.org/) as the package manager for this project.
-
-### **Step 1: Clone the Repository**
-
 ```bash
 git clone https://github.com/yourusername/apparent.git
 cd apparent
-````
+```
 
 ### **Step 2: Install Dependencies**
 
@@ -119,8 +108,6 @@ A.embed()
 A.cluster_networks()
 ```
 
-### Core Functionality
-
 ## 🤝 Contributing
 
 Contributions are welcome! To contribute:
@@ -151,4 +138,4 @@ This project is licensed under the BSD-3 License. See the LICENSE file for detai
 
 ## 📬 Contact
 
-For questions, feedback, or collaboration opportunities please contact the appropriate members of the AIODS Lab.
+For questions, feedback, or collaboration opportunities please contact the AIODS Lab.
