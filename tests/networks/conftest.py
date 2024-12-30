@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 import networkx as nx
 import pandas as pd
 
@@ -21,6 +22,20 @@ def path_network():
 @pytest.fixture
 def complete_network():
     return nx.complete_graph(4)
+
+
+@pytest.fixture
+def random_distance_matrix():
+    rng = np.random.default_rng()
+    matrix = rng.random((10, 10))
+    np.fill_diagonal(matrix, 0)
+    return matrix
+
+
+@pytest.fixture
+def random_data():
+    rng = np.random.default_rng()
+    return rng.random((30, 6))
 
 
 @pytest.fixture
