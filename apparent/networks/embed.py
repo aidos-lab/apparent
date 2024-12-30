@@ -59,7 +59,7 @@ class NetworkEmbedder:
 
         # Initialize the embedding model
         if self.D is not None:
-            perplexity = self.kwargs.get("perplexity", len(self.D) / 2)
+            perplexity = self.kwargs.get("perplexity", int(len(self.D) / 2))
             # Use pairwise distances if available
             model = self.method(
                 metric="precomputed",
@@ -70,7 +70,8 @@ class NetworkEmbedder:
             embedding = model.fit_transform(self.D)
         else:
             # Use raw data if no distance matrix is provided
-            model = self.method(**self.kwargs)
+            perplexity = self.kwargs.get("perplexity", int(len(data) / 2))
+            model = self.method(perplexity=perplexity, **self.kwargs)
             embedding = model.fit_transform(data)
 
         return self.scaler.fit_transform(embedding)
