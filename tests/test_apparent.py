@@ -4,7 +4,6 @@ import networkx as nx
 
 
 from apparent.apparent import Apparent
-from apparent.networks.build import NetworkBuilder
 
 
 class TestApparent:
@@ -23,8 +22,8 @@ class TestApparent:
         assert isinstance(data, pd.DataFrame)
         assert data.shape[0] == max_HSA_size
 
-    def test_pull(self, sample_query, local_url, num_networks):
-        A = Apparent(base_url=local_url)
+    def test_pull(self, sample_query, apparent_url, num_networks):
+        A = Apparent(base_url=apparent_url)
 
         A.pull(sample_query)
 
@@ -38,10 +37,10 @@ class TestApparent:
     def test_batch_interaction_queries(
         self,
         sample_query,
-        local_url,
+        apparent_url,
         num_networks,
     ):
-        A = Apparent(base_url=local_url)
+        A = Apparent(base_url=apparent_url)
         A.pull(sample_query)
         queries = A._batch_interaction_queries()
 
@@ -59,6 +58,7 @@ class TestApparent:
         A.download_interactions()
 
         assert isinstance(A.physician_interactions, pd.DataFrame)
+        assert A.physician_interactions.shape[0] > 0
 
     def test_build_networks(self, local_url, sample_query, num_networks):
         A = Apparent(base_url=local_url)
