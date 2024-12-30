@@ -750,13 +750,13 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "curvature-filtrations"
-version = "0.1.0"
+version = "0.1.1"
 description = "SCOTT: Synthesizing Curvature Operations and Topology Tools. Use curvature filtrations for graphs and graph distributions!"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "curvature_filtrations-0.1.0-py3-none-any.whl", hash = "sha256:da27c153c8bc525cc0d1c47afab215a90a522dfde0cce8283b6026c0309f0778"},
-    {file = "curvature_filtrations-0.1.0.tar.gz", hash = "sha256:d7f6d3840f4c711eebf91e879ea8b354e4a22c2c0c30c508780ed4e80a842960"},
+    {file = "curvature_filtrations-0.1.1-py3-none-any.whl", hash = "sha256:19c1fad474b2395a6e3cff5f351c0bb73bf2b1653e4897a0b360ba5bc2fb7a5b"},
+    {file = "curvature_filtrations-0.1.1.tar.gz", hash = "sha256:6188e9d7cd256290fa5efee1720886c2c7066870a7d0a0e8609cee0ddaa49030"},
 ]
 
 [package.dependencies]
