@@ -14,6 +14,16 @@ def cycle_network():
 
 
 @pytest.fixture
+def path_network():
+    return nx.path_graph(4)
+
+
+@pytest.fixture
+def complete_network():
+    return nx.complete_graph(4)
+
+
+@pytest.fixture
 def edges_df1():
     return pd.DataFrame(
         {

@@ -25,7 +25,13 @@ class NetworkComparator:
         self.networks = networks
 
     def compare(
-        self, measure="forman_curvature", metric="landscape", **kwargs
+        self,
+        measure="forman_curvature",
+        metric="landscape",
+        weight=None,
+        alpha=0.0,
+        prob_fn=None,
+        **kwargs,
     ) -> np.ndarray:
         """
         Compare networks using Scott's Comparator and return a pairwise distance matrix.
@@ -38,17 +44,34 @@ class NetworkComparator:
         metric : str, optional
             The comparison metric to use (default: "landscape").
 
+        weight : str or None, optional
+            The edge attribute to use as weight (default: None).
+
+        alpha : float, optional
+            The alpha parameter for the Comparator (default: 0.0).
+
+        prob_fn : callable or None, optional
+            A probability function for the Comparator (default: None).
+
+        **kwargs : dict, optional
+            Additional keyword arguments for the Comparator.
+
         Returns
         -------
         D : np.ndarray
             A symmetric pairwise distance matrix.
         """
         # Initialize the Comparator
-        C = Comparator(measure=measure)
+        C = Comparator(
+            measure=measure, weight=weight, alpha=alpha, prob_fn=prob_fn
+        )
 
         # Initialize a distance matrix
         n = len(self.networks)
         D = np.zeros((n, n))
+
+        if n == 0:
+            raise ValueError("No networks to compare.")
 
         # Compute pairwise distances
         for (i, G1), (j, G2) in combinations(enumerate(self.networks), 2):
