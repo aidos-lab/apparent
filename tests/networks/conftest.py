@@ -29,6 +29,7 @@ def random_distance_matrix():
     rng = np.random.default_rng()
     matrix = rng.random((10, 10))
     np.fill_diagonal(matrix, 0)
+    matrix = (matrix + matrix.T) / 2
     return matrix
 
 
@@ -36,6 +37,11 @@ def random_distance_matrix():
 def random_data():
     rng = np.random.default_rng()
     return rng.random((30, 6))
+
+
+@pytest.fixture
+def manual_cluster_labels():
+    return np.array([0, 1, 1, 0, 1, 0, 1, 0, 1, 0])
 
 
 @pytest.fixture
