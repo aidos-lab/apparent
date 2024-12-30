@@ -12,7 +12,7 @@
 ## 🔗 **Prototype & Publication**
 
 - **Prototype Tool**: [apparent.topology.rocks](https://apparent.topology.rocks/)
-- **Paper**: ["Analyzing Physician-Patient Referral Networks Using Discrete Curvature and Persistent Homology"](https://arxiv.org/abs/2408.16022)
+- **Paper**: [Analyzing Physician-Patient Referral Networks Using Discrete Curvature and Persistent Homology](https://arxiv.org/abs/2408.16022)
 
 ---
 
