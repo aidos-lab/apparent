@@ -1,7 +1,6 @@
 notebooks/
 figures/
 scripts/
-data/
 outputs/
 notes.md
 
@@ -11,5 +10,6 @@ __pycache__
 .vscode/
 .venv/
 *.pytest_cache/
-data/
+data/us_physician_referral_networks.db
+data/networks.pkl
 
