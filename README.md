@@ -2,8 +2,8 @@
 
 **A**nalysing **P**hysician-**Pa**tient **Re**ferral **N**etwork **T**opology
 
-[![Prototype](https://img.shields.io/badge/Website-apparent.topology.rocks-blue)](https://apparent.topology.rocks/)  
-[![arXiv](https://img.shields.io/badge/arXiv-2408.16022-red)](https://arxiv.org/abs/2408.16022)
+[![Datasette](https://img.shields.io/badge/Website-apparent.topology.rocks-blue)](https://apparent.topology.rocks/)  [![Maintainability](https://api.codeclimate.com/v1/badges/1a82d1617abba6c5747b/maintainability)](https://codeclimate.com/github/aidos-lab/apparent/maintainability) ![GitHub contributors](https://img.shields.io/github/contributors/aidos-lab/CFGGME) ![GitHub](https://img.shields.io/github/license/aidos-lab/CFGGME) [![arXiv](https://img.shields.io/badge/arXiv-2408.16022-red)](https://arxiv.org/abs/2408.16022)
+
 
 **Apparent** is a Python toolkit for analyzing patient referral flows within US healthcare systems using **medical claims data** (Medicare). We provide functionality for building and analyzing patient referral networks. In particular, we provide functionality to analyze these networks via **discrete curvature** and **persistent homology**, in hopes of supporting further research developments into using network analysis to improve efficiency and equity of the US healthcare system.
 
