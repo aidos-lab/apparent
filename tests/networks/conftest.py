@@ -4,6 +4,16 @@ import pandas as pd
 
 
 @pytest.fixture
+def empty_network():
+    return nx.Graph()
+
+
+@pytest.fixture
+def cycle_network():
+    return nx.cycle_graph(4)
+
+
+@pytest.fixture
 def edges_df1():
     return pd.DataFrame(
         {
