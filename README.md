@@ -33,7 +33,7 @@ We recommend using [`poetry`](https://python-poetry.org/) as the package manager
 ### **Step 1: Clone the Repository**
 
 ```bash
-git clone https://github.com/yourusername/apparent.git
+git clone https://github.com/aidos-lab/apparent.git
 cd apparent
 ```
 
