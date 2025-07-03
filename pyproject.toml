@@ -1,26 +1,32 @@
-[tool.poetry]
+[project]
 name = "apparent"
 version = "0.1.0"
 description = "Analyzing Physician-Patient Referral Networks"
-authors = ["jeremy.wayland <jeremy.don.wayland@gmail.com>"]
-license = "MIT"
+authors = [{ name = "jeremy.wayland", email = "jeremy.don.wayland@gmail.com" }]
+requires-python = "~=3.10"
 readme = "README.md"
-packages = [{include = "apparent"}]
+license = "MIT"
+dependencies = [
+    "curvature-filtrations>=0.1.0,<0.2",
+    "pandas>=2.2.3,<3",
+    "python-dotenv>=1.0.1,<2",
+    "matplotlib>=3.9.2,<4",
+    "tqdm>=4.67.1,<5",
+    "swifter>=1.4.0,<2",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-curvature-filtrations = "^0.1.0"
-pandas = "^2.2.3"
-python-dotenv = "^1.0.1"
-matplotlib = "^3.9.2"
-tqdm = "^4.67.1"
-swifter = "^1.4.0"
+[dependency-groups]
+dev = ["pytest>=8.3.3,<9"]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.3"
-[tool.black]
-line-length = 79
+[tool.hatch.build.targets.sdist]
+include = ["apparent"]
+
+[tool.hatch.build.targets.wheel]
+include = ["apparent"]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.black]
+line-length = 79
