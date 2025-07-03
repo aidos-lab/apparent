@@ -28,7 +28,7 @@
 
 ## ⚙️ **Installation**
 
-We recommend using [`poetry`](https://python-poetry.org/) as the package manager for this project.
+APPARENT uses [uv](https://github.com/astral-sh/uv) as the package manager, which provides faster dependency resolution and installation.
 
 ### **Step 1: Clone the Repository**
 
@@ -37,16 +37,22 @@ git clone https://github.com/aidos-lab/apparent.git
 cd apparent
 ```
 
-### **Step 2: Install Dependencies**
+### **Step 2: Install Dependencies and Activate Virtual Environment**
 
+If you don't already have `uv`, install with pip:
 ```bash
-poetry install
+pip install uv
 ```
 
-### **Step 3: Activate the Virtual Environment**
-
+To install dependencies, run:
 ```bash
-poetry shell
+uv sync
+```
+You'll notice this creates a `.venv` folder in the root directory.
+
+We activate that new virtual environment as such:
+```bash
+source .venv/bin/activate
 ```
 
 ### **Step 3: Specify Environment Variables in .env**
@@ -55,6 +61,7 @@ poetry shell
 touch .env
 echo APPARENT_URL="https://apparent.topology.rocks/us_physician_referral_networks.csv" >> .env
 ```
+This points the directory to the location where the database is stored.
 
 ## 📚 Usage
 
