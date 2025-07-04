@@ -80,7 +80,7 @@ class Apparent:
             self.download_interactions()
 
         self.networks = {}
-        # Group by 'hsan' and 'year' to process each unique combination
+        # Group by 'hsa' and 'year' to process each unique combination
         grouped_data = self.physician_interactions.groupby(["hsa", "year"])
         for (hsa, year), group in grouped_data:
             # Call the builder's `build` method for each HSA/year combination
