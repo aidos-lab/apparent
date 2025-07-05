@@ -14,4 +14,7 @@ __pycache__
 data/us_physician_referral_networks.db
 data/networks.pkl
 
+# Sphinx documentation
+docs/build/
+
 
