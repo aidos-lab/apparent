@@ -16,7 +16,10 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pytest>=8.3.3,<9"]
+dev = [
+    "ipykernel>=6.29.5",
+    "pytest>=8.3.3,<9",
+]
 
 [tool.hatch.build.targets.sdist]
 include = ["apparent"]
