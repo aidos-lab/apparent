@@ -135,18 +135,52 @@ Contributions are welcome! To contribute:
 Testing
 -------
 
-We use pytest for testing. To run the test suite, use:
+This project uses ``pytest`` for testing. The tests are divided into two categories: ``unit`` and ``integration``.
+
+Unit Tests
+~~~~~~~~~~
+
+Unit tests run against the live ``apparent.topology.rocks`` service. These tests are run automatically in CI on pushes to ``main`` and ``develop``.
+
+To run the unit tests locally, you will need to set the ``APPARENT_URL`` environment variable in a ``.env`` file in the root of the project:
 
 .. code-block:: bash
 
-    pytest tests/
+    echo APPARENT_URL="https://apparent.topology.rocks/us_physician_referral_networks.csv" >> .env
 
-Test coverage includes:
+Then, you can run the unit tests:
 
-- Network construction and validation
-- Feature computation for nodes and edges
-- Pairwise comparison of networks
-- Clustering and embedding functionalities
+.. code-block:: bash
+
+    pytest -m unit
+
+.. warning::
+    The remote service has the following known limitations:
+
+    - It is not possible to pull the largest networks.
+    - There may be HTTP errors for oversized queries.
+
+Integration Tests
+~~~~~~~~~~~~~~~~
+
+A script is provided to simplify running the integration tests. This script handles downloading the raw dataset, launching a local Datasette server, and executing the integration test suite.
+
+.. warning::
+    The dataset is large (approximately 8 GB) and may take considerable time to download depending on your internet speed.
+
+Integration tests require a local instance of the ``apparent`` database. To set up and run the integration tests, follow these steps:
+
+1. Download the raw dataset.
+2. Set up a local Datasette instance.
+
+To execute the script, use the following command:
+
+.. code-block:: bash
+
+    bash tests/run-integration-tests.sh
+
+
+
 
 License
 -------
@@ -177,6 +211,7 @@ Table of Contents
    networks/compare
    networks/describe
    networks/embed
+
 
 |
 .. image:: _static/aidos_logo.png
