@@ -2,8 +2,7 @@
 
 **A**nalysing **P**hysician-**Pa**tient **Re**ferral **N**etwork **T**opology
 
-[![Datasette](https://img.shields.io/badge/Website-apparent.topology.rocks-blue)](https://apparent.topology.rocks/)  [![Maintainability](https://api.codeclimate.com/v1/badges/1a82d1617abba6c5747b/maintainability)](https://codeclimate.com/github/aidos-lab/apparent/maintainability) ![GitHub contributors](https://img.shields.io/github/contributors/aidos-lab/CFGGME) ![GitHub](https://img.shields.io/github/license/aidos-lab/CFGGME) [![arXiv](https://img.shields.io/badge/arXiv-2408.16022-red)](https://arxiv.org/abs/2408.16022)
-
+[![Datasette](https://img.shields.io/badge/Website-apparent.topology.rocks-blue)](https://apparent.topology.rocks/) [![Maintainability](https://api.codeclimate.com/v1/badges/1a82d1617abba6c5747b/maintainability)](https://codeclimate.com/github/aidos-lab/apparent/maintainability) ![GitHub contributors](https://img.shields.io/github/contributors/aidos-lab/CFGGME) ![GitHub](https://img.shields.io/github/license/aidos-lab/CFGGME) [![arXiv](https://img.shields.io/badge/arXiv-2408.16022-red)](https://arxiv.org/abs/2408.16022)
 
 **Apparent** is a Python toolkit for analyzing patient referral flows within US healthcare systems using **medical claims data** (Medicare). We provide functionality for building and analyzing patient referral networks. In particular, we provide functionality to analyze these networks via **discrete curvature** and **persistent homology**, in hopes of supporting further research developments into using network analysis to improve efficiency and equity of the US healthcare system.
 
@@ -40,17 +39,21 @@ cd apparent
 ### **Step 2: Install Dependencies and Activate Virtual Environment**
 
 If you don't already have `uv`, install with pip:
+
 ```bash
 pip install uv
 ```
 
 To install dependencies, run:
+
 ```bash
 uv sync
 ```
+
 You'll notice this creates a `.venv` folder in the root directory.
 
 We activate that new virtual environment as such:
+
 ```bash
 source .venv/bin/activate
 ```
@@ -61,6 +64,7 @@ source .venv/bin/activate
 touch .env
 echo APPARENT_URL="https://apparent.topology.rocks/us_physician_referral_networks.csv" >> .env
 ```
+
 This points the directory to the location where the database is stored.
 
 ## 📚 Usage
@@ -127,17 +131,45 @@ Contributions are welcome! To contribute:
 
 ## 🧪 Testing
 
-We use pytest for testing. To run the test suite, use:
+This project uses `pytest` for testing. The tests are divided into two categories: `unit` and `integration`.
+
+### Unit Tests
+
+Unit tests run against the live `apparent.topology.rocks` service. These tests are run automatically in CI on pushes to `main` and `develop`.
+
+To run the unit tests locally, you will need to set the `APPARENT_URL` environment variable in a `.env` file in the root of the project:
 
 ```bash
-pytest tests/
+echo APPARENT_URL="https://apparent.topology.rocks/us_physician_referral_networks.csv" >> .env
 ```
 
-Test coverage includes:
-• Network construction and validation
-• Feature computation for nodes and edges
-• Pairwise comparison of networks
-• Clustering and embedding functionalities
+Then, you can run the unit tests:
+
+```bash
+pytest -m unit
+```
+
+**Warning:** The remote service has the following known limitations:
+
+- It is not possible to pull the largest networks.
+- There may be HTTP errors for oversized queries.
+
+### Integration Tests
+
+A script is provided to simplify running the integration tests. This script handles downloading the raw dataset, launching a local `Datasette` server, and executing the integration test suite.
+
+**Warning:** The dataset is large (approximately 8 GB) and may take considerable time to download depending on your internet speed.
+
+Integration tests require a local instance of the `apparent` database. To set up and run the integration tests, follow these steps:
+
+1. Download the raw dataset.
+2. Set up a local Datasette instance.
+
+To execute the script, use the following command:
+
+```bash
+bash tests/run-integration-tests.sh
+```
 
 ## 📝 License
 
