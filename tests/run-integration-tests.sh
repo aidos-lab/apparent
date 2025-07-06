@@ -25,7 +25,7 @@ LOCAL_URL="http://127.0.0.1:8001/us_physician_referral_networks.csv"
 echo "LOCAL_URL=$LOCAL_URL" > .env
 
 echo "Running integration tests..."
-python -m pytest tests/ -v -m remote
+python -m pytest tests/ -v -m integration
 
 echo "Stopping Datasette..."
 kill $DATASENT_PID
