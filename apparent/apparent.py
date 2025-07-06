@@ -62,7 +62,7 @@ class Apparent:
     Examples
     --------
     >>> import apparent
-    >>> app = apparent.Apparent(base_url="https://example.com/datasette")
+    >>> app = apparent.Apparent()
     >>> 
     >>> # Fetch data from a SQL query
     >>> query = "SELECT * FROM physician_data WHERE year >= 2020"
