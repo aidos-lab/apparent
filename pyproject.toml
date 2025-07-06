@@ -3,7 +3,7 @@ name = "apparent"
 version = "0.1.0"
 description = "Analyzing Physician-Patient Referral Networks"
 authors = [{ name = "jeremy.wayland", email = "jeremy.don.wayland@gmail.com" }]
-requires-python = "~=3.10"
+requires-python = ">=3.10"
 readme = "README.md"
 license = "MIT"
 dependencies = [
