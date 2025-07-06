@@ -4,7 +4,7 @@ import numpy as np
 from scott.geometry.measures.ollivier import prob_two_hop
 from apparent.networks.compare import NetworkComparator
 
-
+@pytest.mark.unit
 class TestNetworkComparator:
 
     def test_defaults(self, cycle_network, path_network):

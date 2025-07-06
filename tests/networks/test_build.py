@@ -13,7 +13,7 @@ def ER_provider_model(edges_df, hsa, year, p=0.4):
     G = nx.erdos_renyi_graph(num_providers, p)
     return G
 
-
+@pytest.mark.unit
 class TestBuildNetwork:
     def test_standard_build(self, edges_df1, edges_df2):
         B1 = NetworkBuilder()

@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.cluster import AgglomerativeClustering, KMeans, DBSCAN
 from apparent.networks.cluster import NetworkClusterer
 
-
+@pytest.mark.unit
 class TestNetworkClusterer:
 
     def test_defaults(self):
