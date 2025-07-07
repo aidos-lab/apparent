@@ -3,7 +3,7 @@ import networkx as nx
 from scott.kilt import CURVATURE_MEASURES
 from apparent.networks.describe import NetworkDescriber
 
-
+@pytest.mark.unit
 class TestNetworkDescriber:
 
     def test_defaults(self, empty_network):

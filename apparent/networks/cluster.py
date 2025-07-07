@@ -6,12 +6,38 @@ class NetworkClusterer:
     """
     A class to cluster networks using a pairwise distance matrix or user-provided cluster labels.
 
+    This class provides a flexible interface for clustering networks based on their
+    pairwise distance matrices. It supports multiple clustering algorithms and can
+    handle both precomputed distance matrices and manual cluster assignments.
+
+    Parameters
+    ----------
+    clusterer : object or str, optional
+        A clustering algorithm instance or string identifier. If None, uses
+        AgglomerativeClustering with 2 clusters. If string, must be one of
+        'kmeans', 'agglomerative', or 'dbscan'.
+    **kwargs : dict
+        Additional keyword arguments passed to the clustering algorithm.
+
     Attributes
     ----------
     model : object
         The clustering model (e.g., KMeans, AgglomerativeClustering, or DBSCAN).
     labels_ : np.ndarray
         Cluster labels for each graph.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from apparent.networks import NetworkClusterer
+    >>> 
+    >>> # Create sample distance matrix
+    >>> distances = np.array([[0, 1, 2], [1, 0, 1.5], [2, 1.5, 0]])
+    >>> 
+    >>> # Cluster with default agglomerative clustering
+    >>> clusterer = NetworkClusterer()
+    >>> labels = clusterer.fit(pairwise_distances=distances)
+    >>> print(f"Cluster labels: {labels}")
     """
 
     def __init__(self, clusterer=None, **kwargs):
@@ -20,11 +46,26 @@ class NetworkClusterer:
 
         Parameters
         ----------
-        clusterer : object, optional
-            A clustering algorithm instance (default: AgglomerativeClustering with 2 clusters).
+        clusterer : object or str, optional
+            A clustering algorithm instance or string identifier. If None, uses
+            AgglomerativeClustering with 2 clusters and 'average' linkage.
+            If string, must be one of 'kmeans', 'agglomerative', or 'dbscan'.
+        **kwargs : dict
+            Additional keyword arguments to initialize the clustering algorithm.
+            For AgglomerativeClustering, common parameters include 'n_clusters',
+            'linkage', and 'metric'.
 
-        **kwargs
-            Additional keyword arguments to initialize the default clusterer.
+        Raises
+        ------
+        ValueError
+            If 'ward' linkage is specified with precomputed distances, or if
+            an unsupported clustering method string is provided.
+
+        Examples
+        --------
+        >>> clusterer = NetworkClusterer()  # Default agglomerative
+        >>> clusterer = NetworkClusterer('kmeans', n_clusters=3)
+        >>> clusterer = NetworkClusterer('dbscan', eps=0.5)
         """
         linkage = kwargs.get("linkage", "average")
         if linkage == "ward":
@@ -66,18 +107,37 @@ class NetworkClusterer:
         """
         Fit the clustering model to the pairwise distance matrix, or accept manual labels.
 
+        This method performs clustering on the provided distance matrix or assigns
+        manual labels. For algorithms that support precomputed distances, the
+        distance matrix is used directly. Otherwise, the matrix is flattened to
+        create feature vectors.
+
         Parameters
         ----------
         pairwise_distances : np.ndarray, optional
             A symmetric pairwise distance matrix (n x n) between graphs.
-
+            Required unless manual_labels are provided.
         manual_labels : np.ndarray, optional
-            User-defined cluster labels for each graph.
+            User-defined cluster labels for each graph. If provided, clustering
+            is skipped and these labels are used directly.
 
         Returns
         -------
         labels_ : np.ndarray
-            Cluster labels for each graph.
+            Cluster labels for each graph. Also stored in self.labels_.
+
+        Raises
+        ------
+        ValueError
+            If neither pairwise_distances nor manual_labels are provided, or if
+            the distance matrix is not square and symmetric.
+
+        Examples
+        --------
+        >>> distances = np.array([[0, 1, 2], [1, 0, 1.5], [2, 1.5, 0]])
+        >>> clusterer = NetworkClusterer(n_clusters=2)
+        >>> labels = clusterer.fit(pairwise_distances=distances)
+        >>> print(f"Cluster labels: {labels}")
         """
         # If user provides manual labels, skip clustering and return these labels
         if manual_labels is not None:
@@ -125,9 +185,9 @@ class NetworkClusterer:
         """
         Flatten a pairwise distance matrix to a 2D array.
 
-        Some clustering algorithms (like KMeans) require feature vectors rather than distance matrices.
-        This method converts an (n x n) distance matrix into an (n x n-1) feature array by removing diagonal
-        elements and flattening each row.
+        Some clustering algorithms (like KMeans) require feature vectors rather than
+        distance matrices. This method converts an (n x n) distance matrix into an
+        (n x n-1) feature array by removing diagonal elements and flattening each row.
 
         Parameters
         ----------
@@ -137,7 +197,15 @@ class NetworkClusterer:
         Returns
         -------
         flattened_matrix : np.ndarray
-            A feature array suitable for clustering algorithms that don't support precomputed distances.
+            A feature array of shape (n, n-1) suitable for clustering algorithms
+            that don't support precomputed distances.
+
+        Examples
+        --------
+        >>> distances = np.array([[0, 1, 2], [1, 0, 1.5], [2, 1.5, 0]])
+        >>> clusterer = NetworkClusterer()
+        >>> flattened = clusterer._flatten_distance_matrix(distances)
+        >>> print(f"Flattened shape: {flattened.shape}")  # (3, 2)
         """
         n = distance_matrix.shape[0]
         return distance_matrix[np.arange(n)[:, None] != np.arange(n)].reshape(

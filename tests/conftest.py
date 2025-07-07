@@ -6,13 +6,13 @@ from dotenv import load_dotenv
 
 @pytest.fixture
 def local_url():
-    load_dotenv()
+    load_dotenv(override=True)
     return os.getenv("LOCAL_URL")
 
 
 @pytest.fixture
 def apparent_url():
-    load_dotenv()
+    load_dotenv(override=True)
     return os.getenv("APPARENT_URL")
 
 

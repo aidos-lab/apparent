@@ -2,8 +2,13 @@
 
 **A**nalysing **P**hysician-**Pa**tient **Re**ferral **N**etwork **T**opology
 
-[![Datasette](https://img.shields.io/badge/Website-apparent.topology.rocks-blue)](https://apparent.topology.rocks/)  [![Maintainability](https://api.codeclimate.com/v1/badges/1a82d1617abba6c5747b/maintainability)](https://codeclimate.com/github/aidos-lab/apparent/maintainability) ![GitHub contributors](https://img.shields.io/github/contributors/aidos-lab/CFGGME) ![GitHub](https://img.shields.io/github/license/aidos-lab/CFGGME) [![arXiv](https://img.shields.io/badge/arXiv-2408.16022-red)](https://arxiv.org/abs/2408.16022)
-
+[![Datasette](https://img.shields.io/badge/Website-apparent.topology.rocks-blue)](https://apparent.topology.rocks/)
+[![Docs](https://github.com/aidos-lab/apparent/actions/workflows/deploy-docs.yml/badge.svg)](aidos.group/apparent/)
+[![Tests](https://github.com/aidos-lab/apparent/actions/workflows/py-testing.yml/badge.svg)](https://github.com/aidos-lab/apparent/actions/workflows/py-testing.yml)
+[![Maintainability](https://api.codeclimate.com/v1/badges/1a82d1617abba6c5747b/maintainability)](https://codeclimate.com/github/aidos-lab/apparent/maintainability)
+![GitHub contributors](https://img.shields.io/github/contributors/aidos-lab/CFGGME)
+![GitHub](https://img.shields.io/github/license/aidos-lab/CFGGME)
+[![arXiv](https://img.shields.io/badge/arXiv-2408.16022-red)](https://arxiv.org/abs/2408.16022)
 
 **Apparent** is a Python toolkit for analyzing patient referral flows within US healthcare systems using **medical claims data** (Medicare). We provide functionality for building and analyzing patient referral networks. In particular, we provide functionality to analyze these networks via **discrete curvature** and **persistent homology**, in hopes of supporting further research developments into using network analysis to improve efficiency and equity of the US healthcare system.
 
@@ -28,7 +33,7 @@
 
 ## ⚙️ **Installation**
 
-We recommend using [`poetry`](https://python-poetry.org/) as the package manager for this project.
+APPARENT uses [uv](https://github.com/astral-sh/uv) as the package manager, which provides faster dependency resolution and installation.
 
 ### **Step 1: Clone the Repository**
 
@@ -37,16 +42,26 @@ git clone https://github.com/aidos-lab/apparent.git
 cd apparent
 ```
 
-### **Step 2: Install Dependencies**
+### **Step 2: Install Dependencies and Activate Virtual Environment**
+
+If you don't already have `uv`, install with pip:
 
 ```bash
-poetry install
+pip install uv
 ```
 
-### **Step 3: Activate the Virtual Environment**
+To install dependencies, run:
 
 ```bash
-poetry shell
+uv sync
+```
+
+You'll notice this creates a `.venv` folder in the root directory.
+
+We activate that new virtual environment as such:
+
+```bash
+source .venv/bin/activate
 ```
 
 ### **Step 3: Specify Environment Variables in .env**
@@ -55,6 +70,8 @@ poetry shell
 touch .env
 echo APPARENT_URL="https://apparent.topology.rocks/us_physician_referral_networks.csv" >> .env
 ```
+
+This points the directory to the location where the database is stored.
 
 ## 📚 Usage
 
@@ -120,17 +137,44 @@ Contributions are welcome! To contribute:
 
 ## 🧪 Testing
 
-We use pytest for testing. To run the test suite, use:
+This project uses `pytest` for testing. The tests are divided into two categories: `unit` and `integration`.
+
+### Unit Tests
+
+Unit tests run against the live `apparent.topology.rocks` service. These tests are run automatically in CI on pushes to `main` and `develop`.
+
+To run the unit tests locally, you will need to set the `APPARENT_URL` environment variable in a `.env` file in the root of the project:
 
 ```bash
-pytest tests/
+echo APPARENT_URL="https://apparent.topology.rocks/us_physician_referral_networks.csv" >> .env
 ```
 
-Test coverage includes:
-• Network construction and validation
-• Feature computation for nodes and edges
-• Pairwise comparison of networks
-• Clustering and embedding functionalities
+Then, you can run the unit tests:
+
+```bash
+pytest -m unit
+```
+
+**Warning:** The remote service has the following known limitations:
+
+- It is not possible to pull the largest networks.
+- There may be HTTP errors for oversized queries.
+
+### Integration Tests
+
+A script is provided to simplify running the integration tests. This script handles:
+
+1. Downloading the raw dataset (under `data/us_physician_referral_networks.db`).
+2. Launching a local Datasette server.
+3. Executing the integration test suite.
+
+**Warning:** The dataset is large (approximately 8 GB) and may take considerable time to download depending on your internet speed.
+
+To execute the script, run the following command from the root directory:
+
+```bash
+bash tests/run-integration-tests.sh
+```
 
 ## 📝 License
 

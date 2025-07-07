@@ -7,7 +7,7 @@ from apparent.apparent import Apparent
 
 
 class TestApparent:
-
+    @pytest.mark.integration
     def test_fetcher(
         self,
         local_url,
@@ -22,6 +22,7 @@ class TestApparent:
         assert isinstance(data, pd.DataFrame)
         assert data.shape[0] == max_HSA_size
 
+    @pytest.mark.integration
     def test_pull(self, sample_query, apparent_url, num_networks):
         A = Apparent(base_url=apparent_url)
 
@@ -34,6 +35,7 @@ class TestApparent:
         assert isinstance(A.network_ids, list)
         assert len(A.network_ids) == num_networks
 
+    @pytest.mark.unit
     def test_batch_interaction_queries(
         self,
         sample_query,
@@ -47,6 +49,7 @@ class TestApparent:
         assert isinstance(queries, list)
         assert len(queries) == num_networks
 
+    @pytest.mark.integration
     def test_download_interactions(
         self,
         local_url,
@@ -60,6 +63,7 @@ class TestApparent:
         assert isinstance(A.physician_interactions, pd.DataFrame)
         assert A.physician_interactions.shape[0] > 0
 
+    @pytest.mark.integration
     def test_build_networks(self, local_url, sample_query, num_networks):
         A = Apparent(base_url=local_url)
 
@@ -78,6 +82,7 @@ class TestApparent:
         for G in A.data.Networks:
             assert isinstance(G, nx.Graph)
 
+    @pytest.mark.integration
     def test_add_features(
         self,
         local_url,
@@ -93,12 +98,14 @@ class TestApparent:
             node_features=test_node_features, edge_features=test_edge_features
         )
 
+    @pytest.mark.integration
     def test_compare(self, local_url, sample_query):
         A = Apparent(base_url=local_url)
         A.pull(sample_query)
         A.build_networks()
         A.compare(measure="forman_curvature")
 
+    @pytest.mark.integration
     def test_embed(self, local_url, sample_query):
         A = Apparent(base_url=local_url)
         A.pull(sample_query)
@@ -108,6 +115,7 @@ class TestApparent:
         assert hasattr(A, "embedding")
         assert A.embedding.shape[1] == 2
 
+    @pytest.mark.integration
     def test_cluster(self, local_url, sample_query):
         A = Apparent(base_url=local_url)
         A.pull(sample_query)
