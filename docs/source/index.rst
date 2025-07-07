@@ -161,7 +161,7 @@ Then, you can run the unit tests:
     - There may be HTTP errors for oversized queries.
 
 Integration Tests
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 A script is provided to simplify running the integration tests. This script handles:
 
@@ -211,13 +211,14 @@ Table of Contents
    networks/describe
    networks/embed
 
-
 |
+
 .. image:: _static/aidos_logo.png
    :width: 120
    :height: 120
    :alt: SCOTT logo
    :align: left
+
 
 |
 | **Interested in more of our work?**
