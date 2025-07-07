@@ -21,8 +21,13 @@ DATASENT_PID=$!
 echo "Datasette started with PID: $DATASENT_PID"
 
 echo "Setting LOCAL_URL environment variable..."
+# add LOCAL_URL in a .env file for integration tests
+APPARENT_URL="https://apparent.topology.rocks/us_physician_referral_networks.csv"
 LOCAL_URL="http://127.0.0.1:8001/us_physician_referral_networks.csv"
-echo "LOCAL_URL=$LOCAL_URL" > .env
+# Reinitialize the .env with APPARENT_URL (not needed for integration testing, but desirable to keep for future usage)
+echo "APPARENT_URL"=$APPARENT_URL > .env
+# Add LOCAL_URL to the .env file for integration testing
+echo "LOCAL_URL=$LOCAL_URL" >> .env
 
 echo "Running integration tests..."
 python -m pytest tests/ -v -m integration
