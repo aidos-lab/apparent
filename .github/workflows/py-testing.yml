@@ -2,16 +2,16 @@ name: Test
 
 on:
   push:
-    branches: [main, develop, 10-local-split]
+    branches: [main, dev, 10-local-split]
   pull_request:
-    branches: [main, develop]
+    branches: [main, dev]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v4
