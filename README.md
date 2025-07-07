@@ -156,17 +156,14 @@ pytest -m unit
 
 ### Integration Tests
 
-A script is provided to simplify running the integration tests. This script handles downloading the raw dataset, launching a local `Datasette` server, and executing the integration test suite.
+A script is provided to simplify running the integration tests. This script handles:
+1. Downloading the raw dataset (under `data/us_physician_referral_networks.db`).
+2. Launching a local Datasette server.
+3. Executing the integration test suite.
 
 **Warning:** The dataset is large (approximately 8 GB) and may take considerable time to download depending on your internet speed.
 
-Integration tests require a local instance of the `apparent` database. To set up and run the integration tests, follow these steps:
-
-1. Download the raw dataset.
-2. Set up a local Datasette instance.
-
-To execute the script, use the following command:
-
+To execute the script, run the following command from the root directory:
 ```bash
 bash tests/run-integration-tests.sh
 ```
