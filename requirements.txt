@@ -1,7 +1,6 @@
 aiofiles==24.1.0
 alabaster==1.0.0
 anyio==4.9.0
--e file:///Users/jeremywayland/aidos/projects/apparent
 appnope==0.1.4
 asgi-csrf==0.11
 asgiref==3.9.0
