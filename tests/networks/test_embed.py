@@ -4,7 +4,7 @@ from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
 from apparent.networks.embed import NetworkEmbedder
 
-
+@pytest.mark.unit
 class TestNetworkEmbedder:
 
     def test_defaults(self):
