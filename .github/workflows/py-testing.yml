@@ -2,7 +2,7 @@ name: Test
 
 on:
   push:
-    branches: [main, dev, 10-local-split]
+    branches: [main, dev]
   pull_request:
     branches: [main, dev]
 
