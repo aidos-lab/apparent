@@ -2,7 +2,13 @@
 
 **A**nalysing **P**hysician-**Pa**tient **Re**ferral **N**etwork **T**opology
 
-[![Datasette](https://img.shields.io/badge/Website-apparent.topology.rocks-blue)](https://apparent.topology.rocks/) [![Maintainability](https://api.codeclimate.com/v1/badges/1a82d1617abba6c5747b/maintainability)](https://codeclimate.com/github/aidos-lab/apparent/maintainability) ![GitHub contributors](https://img.shields.io/github/contributors/aidos-lab/CFGGME) ![GitHub](https://img.shields.io/github/license/aidos-lab/CFGGME) [![arXiv](https://img.shields.io/badge/arXiv-2408.16022-red)](https://arxiv.org/abs/2408.16022)
+[![Datasette](https://img.shields.io/badge/Website-apparent.topology.rocks-blue)](https://apparent.topology.rocks/)
+[![Docs](https://github.com/aidos-lab/apparent/actions/workflows/deploy-docs.yml/badge.svg)](https://github.com/aidos-lab/apparent/actions/workflows/deploy-docs.yml)
+[![Tests](https://github.com/aidos-lab/apparent/actions/workflows/py-testing.yml/badge.svg)](https://github.com/aidos-lab/apparent/actions/workflows/py-testing.yml)
+[![Maintainability](https://api.codeclimate.com/v1/badges/1a82d1617abba6c5747b/maintainability)](https://codeclimate.com/github/aidos-lab/apparent/maintainability)
+![GitHub contributors](https://img.shields.io/github/contributors/aidos-lab/CFGGME)
+![GitHub](https://img.shields.io/github/license/aidos-lab/CFGGME)
+[![arXiv](https://img.shields.io/badge/arXiv-2408.16022-red)](https://arxiv.org/abs/2408.16022)
 
 **Apparent** is a Python toolkit for analyzing patient referral flows within US healthcare systems using **medical claims data** (Medicare). We provide functionality for building and analyzing patient referral networks. In particular, we provide functionality to analyze these networks via **discrete curvature** and **persistent homology**, in hopes of supporting further research developments into using network analysis to improve efficiency and equity of the US healthcare system.
 
@@ -157,6 +163,7 @@ pytest -m unit
 ### Integration Tests
 
 A script is provided to simplify running the integration tests. This script handles:
+
 1. Downloading the raw dataset (under `data/us_physician_referral_networks.db`).
 2. Launching a local Datasette server.
 3. Executing the integration test suite.
@@ -164,6 +171,7 @@ A script is provided to simplify running the integration tests. This script hand
 **Warning:** The dataset is large (approximately 8 GB) and may take considerable time to download depending on your internet speed.
 
 To execute the script, run the following command from the root directory:
+
 ```bash
 bash tests/run-integration-tests.sh
 ```
