@@ -128,6 +128,13 @@ class Apparent:
         if os.path.isfile(sql_query):
             sql_query = self._read_query(sql_query)
         self.data = self._fetcher(sql_query)
+        
+        # Validate required columns exist
+        required_columns = ["hsa", "year"]
+        missing_columns = [col for col in required_columns if col not in self.data.columns]
+        if missing_columns:
+            raise ValueError(f"Query results must contain 'hsa' and 'year' columns. Missing: {missing_columns}")
+        
         self.data.sort_values(["hsa", "year"], inplace=True)
 
         self.network_ids = list(
@@ -217,7 +224,7 @@ class Apparent:
         """
         self.builder = NetworkBuilder(build_method)
 
-        if not hasattr(self, "physician_interactions"):
+        if not hasattr(self, "physician_interactions") or self.physician_interactions is None:
             self.download_interactions()
 
         self.networks = {}
