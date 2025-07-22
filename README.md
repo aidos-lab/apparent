@@ -183,4 +183,4 @@ This project is licensed under the BSD-3 License. See the LICENSE file for detai
 
 ## 📬 Contact
 
-For questions, feedback, or collaboration opportunities please contact the AIODS Lab.
+For questions, feedback, or collaboration opportunities please contact the AIDOS Lab.
