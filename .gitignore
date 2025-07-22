@@ -5,6 +5,7 @@ outputs/
 notes.md
 .env
 data/
+.qodo/
 
 *.ipynb_checkpoints
 __pycache__
