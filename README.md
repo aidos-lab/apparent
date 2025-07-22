@@ -5,7 +5,6 @@
 [![Datasette](https://img.shields.io/badge/Website-apparent.topology.rocks-blue)](https://apparent.topology.rocks/)
 [![Docs](https://github.com/aidos-lab/apparent/actions/workflows/deploy-docs.yml/badge.svg)](https://aidos.group/apparent/)
 [![Tests](https://github.com/aidos-lab/apparent/actions/workflows/py-testing.yml/badge.svg)](https://github.com/aidos-lab/apparent/actions/workflows/py-testing.yml)
-[![Maintainability](https://api.codeclimate.com/v1/badges/1a82d1617abba6c5747b/maintainability)](https://codeclimate.com/github/aidos-lab/apparent/maintainability)
 ![GitHub contributors](https://img.shields.io/github/contributors/aidos-lab/CFGGME)
 ![GitHub](https://img.shields.io/github/license/aidos-lab/CFGGME)
 [![arXiv](https://img.shields.io/badge/arXiv-2408.16022-red)](https://arxiv.org/abs/2408.16022)
@@ -17,7 +16,7 @@
 ## 🔗 **Prototype & Publication**
 
 - **Prototype Tool**: [apparent.topology.rocks](https://apparent.topology.rocks/)
-- **Paper**: [Analyzing Physician-Patient Referral Networks Using Discrete Curvature and Persistent Homology](https://arxiv.org/abs/2408.16022)
+- **Paper**: [Characterizing Physician Referral Networks with Ricci Curvature](https://arxiv.org/abs/2408.16022)
 
 ---
 
