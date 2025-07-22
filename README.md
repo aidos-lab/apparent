@@ -33,6 +33,8 @@
 
 ## ⚙️ **Installation**
 
+### From Source
+
 APPARENT uses [uv](https://github.com/astral-sh/uv) as the package manager, which provides faster dependency resolution and installation.
 
 ### **Step 1: Clone the Repository**
@@ -92,7 +94,7 @@ Here's a quick example for how you can pull specific Physician Referral Networks
 from apparent import Apparent
 
 # Initialize Apparent
-A = Apparent()
+A = Apparent(base_url="https://apparent.topology.rocks/us_physician_referral_networks.csv")
 
 # Example SQL query for fetching data
 my_query = """
