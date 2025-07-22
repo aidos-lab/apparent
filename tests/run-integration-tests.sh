@@ -4,6 +4,7 @@
 # for running integration tests.
 
 set -e
+source .venv/bin/activate
 
 DB_URL="https://apparent.topology.rocks/us_physician_referral_networks.db"
 DB_FILE="data/us_physician_referral_networks.db"
@@ -20,6 +21,24 @@ datasette serve "$DB_FILE" --setting sql_time_limit_ms 500000 --setting max_retu
 DATASENT_PID=$!
 echo "Datasette started with PID: $DATASENT_PID"
 
+echo "Waiting for Datasette to be ready..."
+# Wait for Datasette to be ready by checking if it responds
+for i in {1..30}; do
+  if curl -s http://127.0.0.1:8001/ > /dev/null 2>&1; then
+    echo "Datasette is ready!"
+    break
+  fi
+  echo "Waiting for Datasette... ($i/30)"
+  sleep 2
+done
+
+# Check if Datasette is actually ready
+if ! curl -s http://127.0.0.1:8001/ > /dev/null 2>&1; then
+  echo "ERROR: Datasette failed to start after 60 seconds"
+  kill $DATASENT_PID 2>/dev/null || true
+  exit 1
+fi
+
 echo "Setting LOCAL_URL environment variable..."
 # add LOCAL_URL in a .env file for integration tests
 APPARENT_URL="https://apparent.topology.rocks/us_physician_referral_networks.csv"
@@ -33,4 +52,5 @@ echo "Running integration tests..."
 python -m pytest tests/ -v -m integration
 
 echo "Stopping Datasette..."
+sleep 10
 kill $DATASENT_PID
