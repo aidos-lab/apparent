@@ -217,7 +217,7 @@ class Apparent:
         """
         self.builder = NetworkBuilder(build_method)
 
-        if not hasattr(self, "physician_interactions"):
+        if not hasattr(self, "physician_interactions") or self.physician_interactions is None:
             self.download_interactions()
 
         self.networks = {}
