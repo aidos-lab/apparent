@@ -1,45 +1,56 @@
 [project]
-name = "apparent"
-version = "0.1.0"
-description = "Analyzing Physician-Patient Referral Networks"
-authors = [{ name = "jeremy.wayland", email = "jeremy.don.wayland@gmail.com" }]
+name = "apparently"
+version = "0.1.1"
+description = "Analyzing Physician-Patient Referral Network TopoLogY"
+authors = [
+  { name = "Jeremy Wayland", email = "jeremy.don.wayland@gmail.com" },
+  { name = "Emily Simons", email = "emsimons4@gmail.com" },
+  { name = "Bastian Rieck", email = "bastian@rieck.me" },
+]
 requires-python = ">=3.10"
 readme = "README.md"
-license = "MIT"
+license = { text = "BSD 3-Clause License" }
 dependencies = [
-    "curvature-filtrations>=0.1.0,<0.2",
-    "pandas>=2.2.3,<3",
-    "python-dotenv>=1.0.1,<2",
-    "matplotlib>=3.9.2,<4",
-    "tqdm>=4.67.1,<5",
-    "swifter>=1.4.0,<2",
+  "curvature-filtrations>=0.1.0",
+  "pandas>=2.2.3,<3",
+  "python-dotenv>=1.0.1,<2",
+  "matplotlib>=3.9.2,<4",
+  "tqdm>=4.67.1,<5",
+  "swifter>=1.4.0,<2",
 ]
+
+[project.urls]
+Codebase = "https://github.com/aidos-lab/apparent"
+Documentation = "https://aidos.group/apparent/"
+Paper = "https://arxiv.org/abs/2408.16022"
+Dashboard = "https://apparent.topology.rocks/"
 
 [dependency-groups]
 dev = [
-    "datasette>=0.65.1",
-    "furo>=2024.8.6",
-    "ipykernel>=6.29.5",
-    "pytest>=8.3.3,<9",
+  "datasette>=0.65.1",
+  "furo>=2024.8.6",
+  "ipykernel>=6.29.5",
+  "pytest>=8.3.3,<9",
     "pytest-cov>=6.2.1",
-    "sphinx>=8.1.3",
+  "sphinx>=8.1.3",
 ]
-
-[tool.hatch.build.targets.sdist]
-include = ["apparent"]
-
-[tool.hatch.build.targets.wheel]
-include = ["apparent"]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+include = ["apparent"]
+exclude = ["/docs", "/.github", ".env"]
+
+[tool.hatch.build.targets.wheel]
+include = ["apparent"]
 
 [tool.black]
 line-length = 79
 
 [tool.pytest.ini_options]
 markers = [
-    "unit: marks tests as unit tests (no external dependencies)",
-    "integration: marks tests as integration tests (requires external services like datasette)",
+  "unit: marks tests as unit tests (no external dependencies)",
+  "integration: marks tests as integration tests (requires external services like datasette)",
 ]
