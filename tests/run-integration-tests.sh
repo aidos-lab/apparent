@@ -52,5 +52,4 @@ echo "Running integration tests..."
 python -m pytest tests/ -v -m integration
 
 echo "Stopping Datasette..."
-sleep 10
 kill $DATASENT_PID
