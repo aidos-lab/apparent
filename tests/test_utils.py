@@ -10,7 +10,7 @@ import subprocess
 import time
 from unittest import mock
 
-from apparent.utils import download_and_launch_local_db, download_file, update_env_file, stop_datasette, list_datasette_processes
+from apparent.utils import download_and_launch_local_datasette, download_file, update_env_file, stop_local_datasette, list_datasette_processes
 
 
 class MockResponse:
@@ -103,7 +103,7 @@ class TestUtils:
     @mock.patch("apparent.utils.requests.get")
     @mock.patch("apparent.utils.subprocess.Popen")
     @mock.patch("apparent.utils.update_env_file")
-    def test_download_and_launch_local_db_existing_file(self, mock_update_env, mock_popen, mock_get, temp_dir):
+    def test_download_and_launch_local_datasette_existing_file(self, mock_update_env, mock_popen, mock_get, temp_dir):
         """Test downloading and launching when the DB already exists."""
         # Create a mock DB file
         db_path = Path(temp_dir) / "test.db"
@@ -120,7 +120,7 @@ class TestUtils:
         mock_get.return_value = MockResponse()
         
         # Call function with existing DB
-        result = download_and_launch_local_db(
+        result = download_and_launch_local_datasette(
             db_path=db_path,
             port=9999,
             update_env=True,
@@ -144,7 +144,7 @@ class TestUtils:
     @mock.patch("apparent.utils.requests.get")
     @mock.patch("apparent.utils.subprocess.Popen")
     @mock.patch("apparent.utils.update_env_file")
-    def test_download_and_launch_local_db_new_file(self, mock_update_env, mock_popen, mock_get, mock_download, temp_dir):
+    def test_download_and_launch_local_datasette_new_file(self, mock_update_env, mock_popen, mock_get, mock_download, temp_dir):
         """Test downloading and launching when the DB doesn't exist."""
         # Setup path to a non-existent file
         db_path = Path(temp_dir) / "new.db"
@@ -159,7 +159,7 @@ class TestUtils:
         mock_get.return_value = MockResponse()
         
         # Call function with non-existent DB
-        result = download_and_launch_local_db(
+        result = download_and_launch_local_datasette(
             db_url="https://example.com/test.db",
             db_path=db_path,
             port=9999,
@@ -181,7 +181,7 @@ class TestUtils:
         
     @mock.patch("apparent.utils.requests.get")
     @mock.patch("apparent.utils.subprocess.Popen")
-    def test_download_and_launch_local_db_timeout(self, mock_popen, mock_get, temp_dir):
+    def test_download_and_launch_local_datasette_timeout(self, mock_popen, mock_get, temp_dir):
         """Test timeout handling when Datasette fails to start."""
         # Create a mock DB file
         db_path = Path(temp_dir) / "test.db"
@@ -200,7 +200,7 @@ class TestUtils:
         
         # Test that a timeout exception is raised
         with pytest.raises(TimeoutError):
-            download_and_launch_local_db(
+            download_and_launch_local_datasette(
                 db_path=db_path,
                 port=9999,
                 update_env=False,
@@ -208,14 +208,14 @@ class TestUtils:
             )
     
     @mock.patch("importlib.util.find_spec")
-    def test_download_and_launch_local_db_missing_datasette(self, mock_find_spec):
+    def test_download_and_launch_local_datasette_missing_datasette(self, mock_find_spec):
         """Test handling when Datasette is not installed."""
         # Setup mock to simulate datasette not being installed
         mock_find_spec.return_value = None
         
         # Test that an ImportError is raised with a helpful message
         with pytest.raises(ImportError) as e:
-            download_and_launch_local_db()
+            download_and_launch_local_datasette()
         
         assert "Datasette is required" in str(e.value)
     
@@ -223,7 +223,7 @@ class TestUtils:
     @mock.patch("apparent.utils.subprocess.Popen")
     @mock.patch("apparent.utils.update_env_file")
     @mock.patch("select.select")  # Mock select module directly
-    def test_download_and_launch_local_db_verbose_mode(self, mock_select, mock_update_env, mock_popen, mock_get, temp_dir):
+    def test_download_and_launch_local_datasette_verbose_mode(self, mock_select, mock_update_env, mock_popen, mock_get, temp_dir):
         """Test that verbose mode provides additional logging."""
         # Create a mock DB file
         db_path = Path(temp_dir) / "test.db"
@@ -244,7 +244,7 @@ class TestUtils:
         
         # Call function with verbose=True
         with mock.patch("apparent.utils.logger") as mock_logger:
-            result = download_and_launch_local_db(
+            result = download_and_launch_local_datasette(
                 db_path=db_path,
                 port=9999,
                 update_env=False,
@@ -257,15 +257,15 @@ class TestUtils:
             mock_logger.info.assert_any_call("Process started with PID: 12345")
     
     
-    def test_stop_datasette_no_port_or_pid(self):
-        """Test stop_datasette when neither port nor pid is provided."""
+    def test_stop_local_datasette_no_port_or_pid(self):
+        """Test stop_local_datasette when neither port nor pid is provided."""
         with pytest.raises(ValueError) as e:
-            stop_datasette()
+            stop_local_datasette()
         
         assert "Either port or pid must be provided" in str(e.value)
     
     @mock.patch("apparent.utils.psutil")
-    def test_stop_datasette_by_port(self, mock_psutil):
+    def test_stop_local_datasette_by_port(self, mock_psutil):
         """Test stopping Datasette by port number."""
         # Setup mock process
         mock_proc = mock.MagicMock()
@@ -282,7 +282,7 @@ class TestUtils:
         mock_psutil.CONN_LISTEN = "LISTEN"
         
         # Call function
-        result = stop_datasette(port=8001, verbose=True)
+        result = stop_local_datasette(port=8001, verbose=True)
         
         # Verify process was terminated
         assert result is True
@@ -290,7 +290,7 @@ class TestUtils:
         mock_proc.wait.assert_called_once()
     
     @mock.patch("apparent.utils.psutil")
-    def test_stop_datasette_by_pid(self, mock_psutil):
+    def test_stop_local_datasette_by_pid(self, mock_psutil):
         """Test stopping Datasette by process ID."""
         # Setup mock process
         mock_proc = mock.MagicMock()
@@ -300,7 +300,7 @@ class TestUtils:
         mock_psutil.Process.return_value = mock_proc
         
         # Call function
-        result = stop_datasette(pid=12345)
+        result = stop_local_datasette(pid=12345)
         
         # Verify process was found and terminated
         assert result is True
@@ -309,19 +309,19 @@ class TestUtils:
         mock_proc.wait.assert_called_once()
     
     @mock.patch("apparent.utils.psutil")
-    def test_stop_datasette_process_not_found(self, mock_psutil):
+    def test_stop_local_datasette_process_not_found(self, mock_psutil):
         """Test stopping Datasette when no matching process is found."""
         # Setup empty process list
         mock_psutil.process_iter.return_value = []
         
         # Call function
-        result = stop_datasette(port=8001)
+        result = stop_local_datasette(port=8001)
         
         # Verify no process was stopped
         assert result is False
     
     @mock.patch("apparent.utils.psutil")
-    def test_stop_datasette_force_kill(self, mock_psutil):
+    def test_stop_local_datasette_force_kill(self, mock_psutil):
         """Test force killing when graceful termination fails."""
         # Setup mock process that doesn't terminate gracefully
         mock_proc = mock.MagicMock()
@@ -343,7 +343,7 @@ class TestUtils:
         mock_psutil.TimeoutExpired = Exception
         
         # Call function
-        result = stop_datasette(port=8001, verbose=True)
+        result = stop_local_datasette(port=8001, verbose=True)
         
         # Verify process was force killed
         assert result is True
