@@ -121,6 +121,56 @@ Here's a quick example for how you can pull specific Physician Referral Networks
     # Cluster networks based on structural similarity
     A.cluster_networks()
 
+Working with a Local Database
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you're in an environment with connectivity issues, firewall restrictions, or need offline access, you can download the database and run a local Datasette instance:
+
+.. code-block:: python
+
+    from apparent import Apparent
+    from apparent.utils import download_and_launch_local_datasette, stop_local_datasette
+
+    # Download the database and start a local Datasette server
+    local_url = download_and_launch_local_datasette(verbose=True)
+
+    print(f"Local Datasette server running at: {local_url}")
+    # Now you can use Apparent as normal, it will automatically use the local URL
+    app = Apparent(base_url=local_url)
+
+    # Simple sample query that mirrors the test patterns
+    # This gets basic network info for small networks from 2017
+    query = """
+    SELECT
+        hospital_atlas_data.hsa,
+        hospital_atlas_data.year,
+        hospital_atlas_data.latitude,
+        hospital_atlas_data.longitude,
+        referral_network_features.nnodes,
+        referral_network_features.nedges,
+        referral_network_features.forman_mean
+    FROM
+        hospital_atlas_data
+        JOIN referral_network_features ON hospital_atlas_data.hsa = referral_network_features.hsa
+        AND hospital_atlas_data.year = referral_network_features.year
+    WHERE
+        hospital_atlas_data.year = 2017
+        AND referral_network_features.nnodes > 10
+        AND referral_network_features.nnodes < 50
+        AND referral_network_features.nedges < 200
+    ORDER BY
+        referral_network_features.nnodes
+    LIMIT 5;
+    """
+
+    app.pull(query)
+    print(f"Retrieved {len(app.data)} networks")
+    print(app.data.head())
+
+    # Stop the local Datasette server when done
+    stop_local_datasette(port=8001)
+ 
+
 Contributing
 ------------
 
@@ -163,6 +213,10 @@ Then, you can run the unit tests:
 Integration Tests
 ~~~~~~~~~~~~~~~~~~~
 
+You can run integration tests in two ways:
+
+**Option 1: Using the helper script**
+
 A script is provided to simplify running the integration tests. This script handles:
 
 1. Downloading the raw dataset (under ``data/us_physician_referral_networks.db``).
@@ -177,6 +231,28 @@ To execute the script, run the following command from the root directory:
 .. code-block:: bash
 
     bash tests/run-integration-tests.sh
+
+**Option 2: Using the Python API**
+
+You can also use the Python API to set up the local database and run tests:
+
+.. code-block:: python
+
+    from apparent.utils import download_and_launch_local_datasette, stop_local_datasette
+    import subprocess
+
+    # Download DB and start Datasette
+    local_url = download_and_launch_local_datasette(
+        db_path="data/us_physician_referral_networks.db",
+        port=8001,
+        update_env=True
+    )
+
+    # Run integration tests
+    subprocess.run(["python", "-m", "pytest", "tests/", "-v", "-m", "integration"])
+
+    # Stop the local Datasette server when done
+    stop_local_datasette(port=8001)
 
 
 
