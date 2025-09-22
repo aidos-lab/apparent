@@ -1,5 +1,11 @@
-"Query and interact with our US Physician Referral Network Datasette."
+"""
+Apparent: A Comprehensive Interface for US Physician Referral Network Analysis
 
+The Apparent class provides a user-friendly interface to query, build, analyze,
+and visualize physician referral networks from the US healthcare system. It integrates
+various functionalities including data fetching, network construction, feature
+computation, network comparison, clustering, and embedding.
+"""
 import pandas as pd
 import urllib
 import os
