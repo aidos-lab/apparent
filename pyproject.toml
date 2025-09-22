@@ -17,6 +17,8 @@ dependencies = [
   "matplotlib>=3.9.2,<4",
   "tqdm>=4.67.1,<5",
   "swifter>=1.4.0,<2",
+  "requests>=2.32.0,<3",
+  "psutil>=7.0.0",
 ]
 
 [project.urls]
@@ -30,8 +32,10 @@ dev = [
   "datasette>=0.65.1",
   "furo>=2024.8.6",
   "ipykernel>=6.29.5",
+  "jupyter>=1.1.1",
   "pytest>=8.3.3,<9",
-    "pytest-cov>=6.2.1",
+  "pytest-cov>=6.2.1",
+  "seaborn>=0.13.2",
   "sphinx>=8.1.3",
 ]
 
