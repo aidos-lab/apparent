@@ -1,6 +1,6 @@
 [project]
 name = "apparently"
-version = "0.1.1"
+version = "0.1.3"
 description = "Analyzing Physician-Patient Referral Network TopoLogY"
 authors = [
   { name = "Jeremy Wayland", email = "jeremy.don.wayland@gmail.com" },
