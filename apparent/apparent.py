@@ -241,8 +241,8 @@ class Apparent:
             graph = self.builder.build(group, hsa=hsa, year=year)
             self.networks[(hsa, year)] = graph
 
-        # Match the keys in self.networks with the HSA/year pairs in self.data
-        self.data["Networks"] = [self.networks.get((row["hsa"], row["year"])) for _, row in self.data.iterrows()]
+        # Map networks to HSA/year pairs using helper
+        self.data["Networks"] = self._map_networks_to_hsa_year_pairs()
 
     def add_features(
         self,
@@ -312,7 +312,8 @@ class Apparent:
             # Update the `updated_networks` dictionary with the modified graph
             self.networks[(hsanum, year)] = describer.G
 
-        self.data["Networks"] = self.networks.values()
+        # Map networks to HSA/year pairs using helper
+        self.data["Networks"] = self._map_networks_to_hsa_year_pairs()
 
     def compare(
         self,
@@ -537,6 +538,15 @@ class Apparent:
         else:
             load_dotenv()
             return os.getenv("APPARENT_URL")
+    
+    def _map_networks_to_hsa_year_pairs(self):
+        """
+        Map the networks in self.networks to the corresponding HSA/year pairs in self.data.
+        Returns a list of network graphs ordered to match the rows in self.data.
+        """
+        if self.data is None:
+            raise ValueError("self.data must be a valid DataFrame before mapping networks.")
+        return [self.networks.get((row["hsa"], row["year"])) for _, row in self.data.iterrows()]
 
     def _batch_interaction_queries(self):
         queries = []
