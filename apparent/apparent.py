@@ -241,7 +241,8 @@ class Apparent:
             graph = self.builder.build(group, hsa=hsa, year=year)
             self.networks[(hsa, year)] = graph
 
-        self.data["Networks"] = self.networks.values()
+        # Match the keys in self.networks with the HSA/year pairs in self.data
+        self.data["Networks"] = [self.networks.get((row["hsa"], row["year"])) for _, row in self.data.iterrows()]
 
     def add_features(
         self,
