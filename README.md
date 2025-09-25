@@ -129,7 +129,9 @@ A.cluster_networks()
 
 ### Working with a Local Database
 
-If you're in an environment with connectivity issues, firewall restrictions, or need offline access, you can download the database and run a local Datasette instance:
+If you're in an environment with connectivity issues, firewall restrictions, or need offline access, you can download the database and run a local Datasette instance.
+
+> **Note**: If receiving a "sqlite3.DatabaseError: database disk image is malformed" error message, we recommend deleting the current version of the database.
 
 ```python
 from apparent import Apparent
