@@ -84,6 +84,7 @@ Most actions can completed using the `Apparent` object, including the following 
 4. _Compare Networks:_ Analyze pairwise distances between networks using metrics like Forman curvature and Ollivier-Ricci curvature.
 5. _Embed Networks:_ Reduce dimensionality for visualization and machine learning.
 6. _Cluster Networks:_ Group similar networks using clustering algorithms like `KMeans`, `DBSCAN`, and hierarchical clustering.
+7. _Local Database:_ Download the SQL database and launch a local Datasette instance for environments with limited connectivity or firewall restrictions.
 
 ### Quick Example
 
@@ -126,6 +127,51 @@ A.embed()
 A.cluster_networks()
 ```
 
+### Working with a Local Database
+
+If you're in an environment with connectivity issues, firewall restrictions, or need offline access, you can download the database and run a local Datasette instance.
+
+```python
+from apparent import Apparent
+from apparent.utils import download_and_launch_local_datasette, stop_local_datasette
+
+# Download the database and start a local Datasette server
+local_url = download_and_launch_local_datasette(verbose=True)
+
+print(f"Local Datasette server running at: {local_url}")
+# Now you can use Apparent as normal, it will automatically use the local URL
+app = Apparent(base_url=local_url)
+
+# Simple sample query that mirrors the test patterns
+# This gets basic network info for small networks from 2017
+query = """
+    SELECT
+    hospital_atlas_data.hsa,
+    hospital_atlas_data.year,
+    hospital_atlas_data.latitude,
+    hospital_atlas_data.longitude
+    FROM
+    hospital_atlas_data
+    WHERE
+    hospital_atlas_data.year = 2017
+    LIMIT
+    10;
+"""
+
+app.pull(query)
+print(f"Retrieved {len(app.data)} networks")
+print(app.data.head())
+
+# Stop the local Datasette server when done
+stop_local_datasette(port=8001)
+```
+
+> **Note**: If receiving a "sqlite3.DatabaseError: database disk image is malformed" error message, we recommend deleting the current version of the database. This can come from ungraceful shutdowns of python subprocesses. If this persists, consider launching the datasette directly with bash with the following command:
+
+```bash
+datasette /path/to/your/local/sqlFile.db --setting sql_time_limit_ms 500000 --setting max_returned_rows 200000 --setting allow_csv_stream off --reload`
+```
+
 ## 🤝 Contributing
 
 Contributions are welcome! To contribute:
@@ -163,6 +209,10 @@ pytest -m unit
 
 ### Integration Tests
 
+You can run integration tests in two ways:
+
+#### Option 1: Using the helper script
+
 A script is provided to simplify running the integration tests. This script handles:
 
 1. Downloading the raw dataset (under `data/us_physician_referral_networks.db`).
@@ -175,6 +225,28 @@ To execute the script, run the following command from the root directory:
 
 ```bash
 bash tests/run-integration-tests.sh
+```
+
+#### Option 2: Using the Python API
+
+You can also use the new Python API to set up the local database and run tests:
+
+```python
+from apparent.utils import download_and_launch_local_datasette, stop_local_datasette
+import subprocess
+
+# Download DB and start Datasette
+local_url = download_and_launch_local_datasette(
+    db_path="data/us_physician_referral_networks.db",
+    port=8001,
+    update_env=True
+)
+
+# Run integration tests
+subprocess.run(["python", "-m", "pytest", "tests/", "-v", "-m", "integration"])
+
+# Stop the local Datasette server when done
+stop_local_datasette(port=8001)
 ```
 
 ## 📝 License

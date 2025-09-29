@@ -9,6 +9,14 @@ source .venv/bin/activate
 DB_URL="https://apparent.topology.rocks/us_physician_referral_networks.db"
 DB_FILE="data/us_physician_referral_networks.db"
 
+# Check if the destination folder exists, create it if not
+DIR_NAME=$(dirname "$DB_FILE")
+if [ ! -d "$DIR_NAME" ]; then
+  echo "Directory '$DIR_NAME' does not exist. Creating it..."
+  mkdir -p "$DIR_NAME"
+fi
+
+# Check if the file exists, create it if not
 if [ ! -f "$DB_FILE" ]; then
   echo "Downloading database from $DB_URL..."
   curl -L -o "$DB_FILE" "$DB_URL"

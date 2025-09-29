@@ -1,5 +1,11 @@
-"Query and interact with our US Physician Referral Network Datasette."
+"""
+Apparent: A Comprehensive Interface for US Physician Referral Network Analysis
 
+The Apparent class provides a user-friendly interface to query, build, analyze,
+and visualize physician referral networks from the US healthcare system. It integrates
+various functionalities including data fetching, network construction, feature
+computation, network comparison, clustering, and embedding.
+"""
 import pandas as pd
 import urllib
 import os
@@ -235,7 +241,8 @@ class Apparent:
             graph = self.builder.build(group, hsa=hsa, year=year)
             self.networks[(hsa, year)] = graph
 
-        self.data["Networks"] = self.networks.values()
+        # Map networks to HSA/year pairs using helper
+        self.data["Networks"] = self._map_networks_to_hsa_year_pairs()
 
     def add_features(
         self,
@@ -305,7 +312,8 @@ class Apparent:
             # Update the `updated_networks` dictionary with the modified graph
             self.networks[(hsanum, year)] = describer.G
 
-        self.data["Networks"] = self.networks.values()
+        # Map networks to HSA/year pairs using helper
+        self.data["Networks"] = self._map_networks_to_hsa_year_pairs()
 
     def compare(
         self,
@@ -530,6 +538,15 @@ class Apparent:
         else:
             load_dotenv()
             return os.getenv("APPARENT_URL")
+    
+    def _map_networks_to_hsa_year_pairs(self):
+        """
+        Map the networks in self.networks to the corresponding HSA/year pairs in self.data.
+        Returns a list of network graphs ordered to match the rows in self.data.
+        """
+        if self.data is None:
+            raise ValueError("self.data must be a valid DataFrame before mapping networks.")
+        return [self.networks.get((row["hsa"], row["year"])) for _, row in self.data.iterrows()]
 
     def _batch_interaction_queries(self):
         queries = []
