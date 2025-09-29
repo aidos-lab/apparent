@@ -131,8 +131,6 @@ A.cluster_networks()
 
 If you're in an environment with connectivity issues, firewall restrictions, or need offline access, you can download the database and run a local Datasette instance.
 
-> **Note**: If receiving a "sqlite3.DatabaseError: database disk image is malformed" error message, we recommend deleting the current version of the database.
-
 ```python
 from apparent import Apparent
 from apparent.utils import download_and_launch_local_datasette, stop_local_datasette
@@ -166,6 +164,12 @@ print(app.data.head())
 
 # Stop the local Datasette server when done
 stop_local_datasette(port=8001)
+```
+
+> **Note**: If receiving a "sqlite3.DatabaseError: database disk image is malformed" error message, we recommend deleting the current version of the database. This can come from ungraceful shutdowns of python subprocesses. If this persists, consider launching the datasette directly with bash with the following command:
+
+```bash
+datasette /path/to/your/local/sqlFile.db --setting sql_time_limit_ms 500000 --setting max_returned_rows 200000 --setting allow_csv_stream off --reload`
 ```
 
 ## 🤝 Contributing
