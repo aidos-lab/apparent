@@ -1,6 +1,6 @@
 [project]
 name = "apparently"
-version = "0.1.8"
+version = "0.1.10"
 description = "Analyzing Physician-Patient Referral Network TopoLogY"
 authors = [
   { name = "Jeremy Wayland", email = "jeremy.don.wayland@gmail.com" },
@@ -12,6 +12,7 @@ readme = "README.md"
 license = { text = "BSD 3-Clause License" }
 dependencies = [
   "curvature-filtrations>=0.1.1",
+  "datasette>=0.65.1",
   "pandas>=2.2.3",
   "python-dotenv>=1.0.1",
   "tqdm>=4.67.1",
@@ -29,7 +30,6 @@ Dashboard = "https://apparent.topology.rocks/"
 
 [dependency-groups]
 dev = [
-  "datasette>=0.65.1",
   "furo>=2024.8.6",
   "ipykernel>=6.29.5",
   "jupyter>=1.1.1",
