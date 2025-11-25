@@ -14,6 +14,8 @@ __pycache__
 .venv/
 *.pytest_cache/
 
+uv.lock
+
 
 # Sphinx documentation
 docs/build/
