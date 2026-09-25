@@ -43,8 +43,8 @@ class TestApparent:
         assert data.shape[0] == max_HSA_size
 
     @pytest.mark.integration
-    def test_pull(self, sample_query, apparent_url, num_networks):
-        A = Apparent(base_url=apparent_url)
+    def test_pull(self, sample_query, local_url, num_networks):
+        A = Apparent(base_url=local_url)
 
         A.pull(sample_query)
 
@@ -55,14 +55,14 @@ class TestApparent:
         assert isinstance(A.network_ids, list)
         assert len(A.network_ids) == num_networks
 
-    @pytest.mark.unit
+    @pytest.mark.integration
     def test_batch_interaction_queries(
         self,
         sample_query,
-        apparent_url,
+        local_url,
         num_networks,
     ):
-        A = Apparent(base_url=apparent_url)
+        A = Apparent(base_url=local_url)
         A.pull(sample_query)
         queries = A._batch_interaction_queries()
 

@@ -13,9 +13,6 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
 
-    env:
-      APPARENT_URL: "https://apparent.topology.rocks/us_physician_referral_networks.csv"
-
     steps:
       - uses: actions/checkout@v4
 

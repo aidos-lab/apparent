@@ -2,7 +2,7 @@
 
 **A**nalysing **P**hysician-**Pa**tient **Re**ferral **N**etwork **T**opology
 
-[![Datasette](https://img.shields.io/badge/Website-apparent.topology.rocks-blue)](https://apparent.topology.rocks/)
+[![Website](https://img.shields.io/badge/Website-apparent.krv.ai-blue)](https://apparent.krv.ai/)
 [![Docs](https://github.com/aidos-lab/apparent/actions/workflows/deploy-docs.yml/badge.svg)](https://aidos.group/apparent/)
 [![Tests](https://github.com/aidos-lab/apparent/actions/workflows/py-testing.yml/badge.svg)](https://github.com/aidos-lab/apparent/actions/workflows/py-testing.yml)
 ![GitHub contributors](https://img.shields.io/github/contributors/aidos-lab/CFGGME)
@@ -15,7 +15,7 @@
 
 ## 🔗 **Prototype & Publication**
 
-- **Prototype Tool**: [apparent.topology.rocks](https://apparent.topology.rocks/)
+- **Prototype Tool**: [apparent.krv.ai](https://apparent.krv.ai/)
 - **Paper**: [Characterizing Physician Referral Networks with Ricci Curvature](https://arxiv.org/abs/2408.16022)
 
 ---
@@ -65,14 +65,15 @@ We activate that new virtual environment as such:
 source .venv/bin/activate
 ```
 
-### **Step 3: Specify Environment Variables in .env**
+### **Step 3: Download the Database and Start a Local Server**
 
-```bash
-touch .env
-echo APPARENT_URL="https://apparent.topology.rocks/us_physician_referral_networks.csv" >> .env
+```python
+from apparent.utils import download_and_launch_local_datasette
+
+download_and_launch_local_datasette()
 ```
 
-This points the directory to the location where the database is stored.
+This downloads the ~3 GB SQLite database once (to `data/`), starts a local Datasette server at `http://127.0.0.1:8001`, and writes `LOCAL_URL` to `.env` so `Apparent()` picks it up automatically.
 
 ## 📚 Usage
 
@@ -93,8 +94,8 @@ Here's a quick example for how you can pull specific Physician Referral Networks
 ```python
 from apparent import Apparent
 
-# Initialize Apparent
-A = Apparent(base_url="https://apparent.topology.rocks/us_physician_referral_networks.csv")
+# Initialize Apparent (uses LOCAL_URL from .env, see Step 3)
+A = Apparent()
 
 # Example SQL query for fetching data
 my_query = """
@@ -188,24 +189,11 @@ This project uses `pytest` for testing. The tests are divided into two categorie
 
 ### Unit Tests
 
-Unit tests run against the live `apparent.topology.rocks` service. These tests are run automatically in CI on pushes to `main` and `develop`.
-
-To run the unit tests locally, you will need to set the `APPARENT_URL` environment variable in a `.env` file in the root of the project:
-
-```bash
-echo APPARENT_URL="https://apparent.topology.rocks/us_physician_referral_networks.csv" >> .env
-```
-
-Then, you can run the unit tests:
+Unit tests have no external dependencies. They run automatically in CI on pushes to `main` and `develop`:
 
 ```bash
 pytest -m unit
 ```
-
-**Warning:** The remote service has the following known limitations:
-
-- It is not possible to pull the largest networks.
-- There may be HTTP errors for oversized queries.
 
 ### Integration Tests
 
@@ -219,7 +207,7 @@ A script is provided to simplify running the integration tests. This script hand
 2. Launching a local Datasette server.
 3. Executing the integration test suite.
 
-**Warning:** The dataset is large (approximately 8 GB) and may take considerable time to download depending on your internet speed.
+**Warning:** The dataset is large (approximately 3 GB) and may take considerable time to download depending on your internet speed.
 
 To execute the script, run the following command from the root directory:
 

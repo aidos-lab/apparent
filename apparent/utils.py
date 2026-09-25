@@ -312,7 +312,6 @@ def update_env_file(local_url: str) -> None:
     """
     env_path = Path(".env")
     updates = {"LOCAL_URL": local_url}
-    defaults = {"APPARENT_URL": "https://apparent.topology.rocks/us_physician_referral_networks.csv"}
 
     # Rewrite matching keys in place, keeping comments and blank lines untouched
     lines = env_path.read_text().splitlines() if env_path.exists() else []
@@ -325,7 +324,7 @@ def update_env_file(local_url: str) -> None:
         if key in updates:
             lines[i] = f"{key}={updates[key]}"
 
-    for key, value in {**defaults, **updates}.items():
+    for key, value in updates.items():
         if key not in seen:
             lines.append(f"{key}={value}")
 
