@@ -6,9 +6,17 @@
 set -e
 source .venv/bin/activate
 
-DB_URL="https://apparent.topology.rocks/us_physician_referral_networks.db"
+DB_URL="https://storage.googleapis.com/apparent-public-data/us_physician_referral_networks.db"
 DB_FILE="data/us_physician_referral_networks.db"
 
+# Check if the destination folder exists, create it if not
+DIR_NAME=$(dirname "$DB_FILE")
+if [ ! -d "$DIR_NAME" ]; then
+  echo "Directory '$DIR_NAME' does not exist. Creating it..."
+  mkdir -p "$DIR_NAME"
+fi
+
+# Check if the file exists, create it if not
 if [ ! -f "$DB_FILE" ]; then
   echo "Downloading database from $DB_URL..."
   curl -L -o "$DB_FILE" "$DB_URL"
@@ -41,12 +49,8 @@ fi
 
 echo "Setting LOCAL_URL environment variable..."
 # add LOCAL_URL in a .env file for integration tests
-APPARENT_URL="https://apparent.topology.rocks/us_physician_referral_networks.csv"
 LOCAL_URL="http://127.0.0.1:8001/us_physician_referral_networks.csv"
-# Reinitialize the .env with APPARENT_URL (not needed for integration testing, but desirable to keep for future usage)
-echo "APPARENT_URL"=$APPARENT_URL > .env
-# Add LOCAL_URL to the .env file for integration testing
-echo "LOCAL_URL=$LOCAL_URL" >> .env
+echo "LOCAL_URL=$LOCAL_URL" > .env
 
 echo "Running integration tests..."
 python -m pytest tests/ -v -m integration

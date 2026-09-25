@@ -2,7 +2,7 @@
 
 **A**nalysing **P**hysician-**Pa**tient **Re**ferral **N**etwork **T**opology
 
-[![Datasette](https://img.shields.io/badge/Website-apparent.topology.rocks-blue)](https://apparent.topology.rocks/)
+[![Website](https://img.shields.io/badge/Website-apparent.krv.ai-blue)](https://apparent.krv.ai/)
 [![Docs](https://github.com/aidos-lab/apparent/actions/workflows/deploy-docs.yml/badge.svg)](https://aidos.group/apparent/)
 [![Tests](https://github.com/aidos-lab/apparent/actions/workflows/py-testing.yml/badge.svg)](https://github.com/aidos-lab/apparent/actions/workflows/py-testing.yml)
 ![GitHub contributors](https://img.shields.io/github/contributors/aidos-lab/CFGGME)
@@ -15,7 +15,7 @@
 
 ## 🔗 **Prototype & Publication**
 
-- **Prototype Tool**: [apparent.topology.rocks](https://apparent.topology.rocks/)
+- **Prototype Tool**: [apparent.krv.ai](https://apparent.krv.ai/)
 - **Paper**: [Characterizing Physician Referral Networks with Ricci Curvature](https://arxiv.org/abs/2408.16022)
 
 ---
@@ -65,14 +65,15 @@ We activate that new virtual environment as such:
 source .venv/bin/activate
 ```
 
-### **Step 3: Specify Environment Variables in .env**
+### **Step 3: Download the Database and Start a Local Server**
 
-```bash
-touch .env
-echo APPARENT_URL="https://apparent.topology.rocks/us_physician_referral_networks.csv" >> .env
+```python
+from apparent.utils import download_and_launch_local_datasette
+
+download_and_launch_local_datasette()
 ```
 
-This points the directory to the location where the database is stored.
+This downloads the ~3 GB SQLite database once (to `data/`), starts a local Datasette server at `http://127.0.0.1:8001`, and writes `LOCAL_URL` to `.env` so `Apparent()` picks it up automatically.
 
 ## 📚 Usage
 
@@ -84,6 +85,7 @@ Most actions can completed using the `Apparent` object, including the following 
 4. _Compare Networks:_ Analyze pairwise distances between networks using metrics like Forman curvature and Ollivier-Ricci curvature.
 5. _Embed Networks:_ Reduce dimensionality for visualization and machine learning.
 6. _Cluster Networks:_ Group similar networks using clustering algorithms like `KMeans`, `DBSCAN`, and hierarchical clustering.
+7. _Local Database:_ Download the SQL database and launch a local Datasette instance for environments with limited connectivity or firewall restrictions.
 
 ### Quick Example
 
@@ -92,8 +94,8 @@ Here's a quick example for how you can pull specific Physician Referral Networks
 ```python
 from apparent import Apparent
 
-# Initialize Apparent
-A = Apparent(base_url="https://apparent.topology.rocks/us_physician_referral_networks.csv")
+# Initialize Apparent (uses LOCAL_URL from .env, see Step 3)
+A = Apparent()
 
 # Example SQL query for fetching data
 my_query = """
@@ -126,6 +128,51 @@ A.embed()
 A.cluster_networks()
 ```
 
+### Working with a Local Database
+
+If you're in an environment with connectivity issues, firewall restrictions, or need offline access, you can download the database and run a local Datasette instance.
+
+```python
+from apparent import Apparent
+from apparent.utils import download_and_launch_local_datasette, stop_local_datasette
+
+# Download the database and start a local Datasette server
+local = download_and_launch_local_datasette(verbose=True)
+
+print(f"Local Datasette server running at: {local['url']}")
+# Point Apparent at the local CSV endpoint
+app = Apparent(base_url=local["csv_url"])
+
+# Simple sample query that mirrors the test patterns
+# This gets basic network info for small networks from 2017
+query = """
+    SELECT
+    hospital_atlas_data.hsa,
+    hospital_atlas_data.year,
+    hospital_atlas_data.latitude,
+    hospital_atlas_data.longitude
+    FROM
+    hospital_atlas_data
+    WHERE
+    hospital_atlas_data.year = 2017
+    LIMIT
+    10;
+"""
+
+app.pull(query)
+print(f"Retrieved {len(app.data)} networks")
+print(app.data.head())
+
+# Stop the local Datasette server when done
+stop_local_datasette(port=8001)
+```
+
+> **Note**: If receiving a "sqlite3.DatabaseError: database disk image is malformed" error message, we recommend deleting the current version of the database. This can come from ungraceful shutdowns of python subprocesses. If this persists, consider launching the datasette directly with bash with the following command:
+
+```bash
+datasette /path/to/your/local/sqlFile.db --setting sql_time_limit_ms 500000 --setting max_returned_rows 200000 --setting allow_csv_stream off --reload`
+```
+
 ## 🤝 Contributing
 
 Contributions are welcome! To contribute:
@@ -142,26 +189,17 @@ This project uses `pytest` for testing. The tests are divided into two categorie
 
 ### Unit Tests
 
-Unit tests run against the live `apparent.topology.rocks` service. These tests are run automatically in CI on pushes to `main` and `develop`.
-
-To run the unit tests locally, you will need to set the `APPARENT_URL` environment variable in a `.env` file in the root of the project:
-
-```bash
-echo APPARENT_URL="https://apparent.topology.rocks/us_physician_referral_networks.csv" >> .env
-```
-
-Then, you can run the unit tests:
+Unit tests have no external dependencies. They run automatically in CI on pushes to `main` and `develop`:
 
 ```bash
 pytest -m unit
 ```
 
-**Warning:** The remote service has the following known limitations:
-
-- It is not possible to pull the largest networks.
-- There may be HTTP errors for oversized queries.
-
 ### Integration Tests
+
+You can run integration tests in two ways:
+
+#### Option 1: Using the helper script
 
 A script is provided to simplify running the integration tests. This script handles:
 
@@ -169,12 +207,34 @@ A script is provided to simplify running the integration tests. This script hand
 2. Launching a local Datasette server.
 3. Executing the integration test suite.
 
-**Warning:** The dataset is large (approximately 8 GB) and may take considerable time to download depending on your internet speed.
+**Warning:** The dataset is large (approximately 3 GB) and may take considerable time to download depending on your internet speed.
 
 To execute the script, run the following command from the root directory:
 
 ```bash
 bash tests/run-integration-tests.sh
+```
+
+#### Option 2: Using the Python API
+
+You can also use the new Python API to set up the local database and run tests:
+
+```python
+from apparent.utils import download_and_launch_local_datasette, stop_local_datasette
+import subprocess
+
+# Download DB and start Datasette
+local = download_and_launch_local_datasette(
+    db_path="data/us_physician_referral_networks.db",
+    port=8001,
+    update_env=True
+)
+
+# Run integration tests
+subprocess.run(["python", "-m", "pytest", "tests/", "-v", "-m", "integration"])
+
+# Stop the local Datasette server when done
+stop_local_datasette(port=8001)
 ```
 
 ## 📝 License

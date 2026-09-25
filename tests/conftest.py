@@ -12,8 +12,8 @@ def local_url():
 
 @pytest.fixture
 def apparent_url():
-    load_dotenv(override=True)
-    return os.getenv("APPARENT_URL")
+    """Placeholder URL for unit tests, which never hit the network."""
+    return "http://127.0.0.1:8001/us_physician_referral_networks.csv"
 
 
 @pytest.fixture

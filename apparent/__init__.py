@@ -1,4 +1,6 @@
-version = "1.0.0"
+from importlib.metadata import version as _version
+
+__version__ = _version("apparently")
 
 from apparent.apparent import Apparent
 

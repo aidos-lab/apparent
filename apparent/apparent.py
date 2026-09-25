@@ -1,5 +1,11 @@
-"Query and interact with our US Physician Referral Network Datasette."
+"""
+Apparent: A Comprehensive Interface for US Physician Referral Network Analysis
 
+The Apparent class provides a user-friendly interface to query, build, analyze,
+and visualize physician referral networks from the US healthcare system. It integrates
+various functionalities including data fetching, network construction, feature
+computation, network comparison, clustering, and embedding.
+"""
 import pandas as pd
 import urllib
 import os
@@ -30,7 +36,8 @@ class Apparent:
     ----------
     base_url : str, optional
         The base URL for the Datasette instance. If not provided, will attempt to 
-        load from the APPARENT_URL environment variable.
+        load from the LOCAL_URL (set by `download_and_launch_local_datasette`) or
+        APPARENT_URL environment variables.
 
     Attributes
     ----------
@@ -235,7 +242,8 @@ class Apparent:
             graph = self.builder.build(group, hsa=hsa, year=year)
             self.networks[(hsa, year)] = graph
 
-        self.data["Networks"] = self.networks.values()
+        # Map networks to HSA/year pairs using helper
+        self.data["Networks"] = self._map_networks_to_hsa_year_pairs()
 
     def add_features(
         self,
@@ -305,7 +313,8 @@ class Apparent:
             # Update the `updated_networks` dictionary with the modified graph
             self.networks[(hsanum, year)] = describer.G
 
-        self.data["Networks"] = self.networks.values()
+        # Map networks to HSA/year pairs using helper
+        self.data["Networks"] = self._map_networks_to_hsa_year_pairs()
 
     def compare(
         self,
@@ -496,29 +505,15 @@ class Apparent:
         plt.show()
 
     def _fetcher(self, sql_query) -> pd.DataFrame:
-        df = pd.DataFrame()
-        try:
-            # Encode the SQL query
-            encoded_query = urllib.parse.quote(sql_query)
-
-            # Construct the full URL
-            url = f"{self.base_url}?sql={encoded_query}"
-
-            # Fetch data using pandas
-            df = pd.read_csv(url)
-
-            assert (
-                "hsa" in df.columns
-            ), "Please select 'hsa' as an attribute in your query as is needed for `Apparent` to identify networks."
-
-            assert (
-                "year" in df.columns
-            ), "Please select 'year' as an attribute in your query as is needed for `Apparent` to identify networks."
-
-        except Exception as e:
-            print(f"An error occurred: {e}")
-
-        return df
+        if not self.base_url:
+            raise ValueError(
+                "No Datasette URL configured. Run "
+                "`apparent.utils.download_and_launch_local_datasette()` or pass `base_url`."
+            )
+        # Let network/HTTP/SQL errors propagate: swallowing them hid a dead
+        # endpoint behind a misleading "missing hsa/year columns" error
+        url = f"{self.base_url}?sql={urllib.parse.quote(sql_query)}"
+        return pd.read_csv(url)
 
     def _read_query(self, file_path):
         with open(file_path, "r") as file:
@@ -529,7 +524,16 @@ class Apparent:
             return base_url
         else:
             load_dotenv()
-            return os.getenv("APPARENT_URL")
+            return os.getenv("LOCAL_URL") or os.getenv("APPARENT_URL")
+    
+    def _map_networks_to_hsa_year_pairs(self):
+        """
+        Map the networks in self.networks to the corresponding HSA/year pairs in self.data.
+        Returns a list of network graphs ordered to match the rows in self.data.
+        """
+        if self.data is None:
+            raise ValueError("self.data must be a valid DataFrame before mapping networks.")
+        return [self.networks.get((row["hsa"], row["year"])) for _, row in self.data.iterrows()]
 
     def _batch_interaction_queries(self):
         queries = []
