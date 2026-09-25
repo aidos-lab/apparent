@@ -24,7 +24,7 @@ jobs:
 
       # Install dependencies and documentation tools
       - run: curl -LsSf https://astral.sh/uv/install.sh | sh
-      - run: uv sync
+      - run: uv sync --locked
       - run: uv run sphinx-build -M html docs/source docs/build
 
       - uses: actions/upload-pages-artifact@v3
