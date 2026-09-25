@@ -97,11 +97,8 @@ def download_and_launch_local_datasette(
     >>> print(f"Process ID: {result['pid']}")
     """
     # Check if datasette is installed
-    try:
-        import importlib.util
-        if importlib.util.find_spec("datasette") is None:
-            raise ImportError("Datasette module not found")
-    except ImportError:
+    import importlib.util
+    if importlib.util.find_spec("datasette") is None:
         msg = (
             "Datasette is required for this function but it's not installed. "
             "You can install it with: pip install datasette"
@@ -121,7 +118,7 @@ def download_and_launch_local_datasette(
             logger.info(f"Database ready at {db_path}")
         except Exception as e:
             logger.error(f"Failed to download database: {e}")
-            raise FileNotFoundError(f"Failed to download database: {e}")
+            raise FileNotFoundError(f"Failed to download database: {e}") from e
     elif verbose:
         logger.info(f"Database file already exists at {db_path}")
 
@@ -171,7 +168,7 @@ def download_and_launch_local_datasette(
     # Send output to a log file: an unread PIPE fills up with request logs and
     # blocks the server
     log_path = db_path.with_suffix(".datasette.log")
-    with open(log_path, "w") as log_file:
+    with open(log_path, "w", encoding="utf-8") as log_file:
         process = subprocess.Popen(cmd, stdout=log_file, stderr=subprocess.STDOUT)
 
     if verbose:
@@ -179,12 +176,12 @@ def download_and_launch_local_datasette(
 
     # Wait for Datasette to start
     ready = False
-    start_time = time.time()
-    while time.time() - start_time < timeout:
+    start_time = time.monotonic()
+    while time.monotonic() - start_time < timeout:
         if process.poll() is not None:
             error_message = (
                 f"Datasette process exited unexpectedly (return code {process.returncode}). "
-                f"Output:\n{log_path.read_text()}"
+                f"Output:\n{log_path.read_text(encoding="utf-8", errors="replace")}"
             )
             logger.error(error_message)
             raise RuntimeError(error_message)
@@ -200,7 +197,7 @@ def download_and_launch_local_datasette(
             if verbose:
                 logger.debug(f"Connection failed: {e}")
 
-        elapsed = int(time.time() - start_time)
+        elapsed = int(time.monotonic() - start_time)
         if elapsed % 10 == 0 or verbose:  # Log every 10 seconds normally, or every 2 seconds in verbose mode
             logger.info(f"Waiting for Datasette... ({elapsed}s)")
         time.sleep(2)
@@ -215,7 +212,7 @@ def download_and_launch_local_datasette(
             process.wait()
         error_message = (
             f"Datasette failed to start after {timeout} seconds. "
-            f"Output:\n{log_path.read_text()}"
+            f"Output:\n{log_path.read_text(encoding="utf-8", errors="replace")}"
         )
         logger.error(error_message)
         raise TimeoutError(error_message)
@@ -314,7 +311,7 @@ def update_env_file(local_url: str) -> None:
     updates = {"LOCAL_URL": local_url}
 
     # Rewrite matching keys in place, keeping comments and blank lines untouched
-    lines = env_path.read_text().splitlines() if env_path.exists() else []
+    lines = env_path.read_text(encoding="utf-8").splitlines() if env_path.exists() else []
     seen = set()
     for i, line in enumerate(lines):
         key = line.split("=", 1)[0].strip()
@@ -328,7 +325,7 @@ def update_env_file(local_url: str) -> None:
         if key not in seen:
             lines.append(f"{key}={value}")
 
-    env_path.write_text("\n".join(lines) + "\n")
+    env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     
     logger.info(f"Updated .env file with LOCAL_URL={local_url}")
 
@@ -442,8 +439,8 @@ def stop_local_datasette(port: Optional[int] = None, pid: Optional[int] = None, 
             stopped_any = True
         except psutil.AccessDenied:
             logger.error(f"Access denied when trying to stop process {proc.pid}")
-        except Exception as e:
-            logger.error(f"Error stopping process {proc.pid}: {e}")
+        except Exception:
+            logger.exception(f"Error stopping process {proc.pid}")
     
     return stopped_any
 

@@ -9,7 +9,9 @@
 project = "APPARENT"
 copyright = "2025, AIDOS Lab"
 author = "AIDOS Lab"
-release = "0.1"
+from importlib.metadata import version as _version
+
+release = _version("apparently")
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
