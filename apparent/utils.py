@@ -24,7 +24,7 @@ def _is_datasette(proc: psutil.Process) -> bool:
 
 
 def download_and_launch_local_datasette(
-    db_url: str = "https://apparent.topology.rocks/us_physician_referral_networks.db",
+    db_url: str = "https://storage.googleapis.com/apparent-public-data/us_physician_referral_networks.db",
     db_path: Union[str, Path] = "data/us_physician_referral_networks.db",
     port: int = 8001,
     update_env: bool = True,
@@ -40,7 +40,7 @@ def download_and_launch_local_datasette(
     ----------
     db_url : str, optional
         The URL to download the database from.
-        Default is "https://apparent.topology.rocks/us_physician_referral_networks.db"
+        Default is "https://storage.googleapis.com/apparent-public-data/us_physician_referral_networks.db"
     db_path : str, optional
         The local path to save the database file to.
         Default is "data/us_physician_referral_networks.db"

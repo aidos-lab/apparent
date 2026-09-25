@@ -6,7 +6,7 @@
 set -e
 source .venv/bin/activate
 
-DB_URL="https://apparent.topology.rocks/us_physician_referral_networks.db"
+DB_URL="https://storage.googleapis.com/apparent-public-data/us_physician_referral_networks.db"
 DB_FILE="data/us_physician_referral_networks.db"
 
 # Check if the destination folder exists, create it if not
