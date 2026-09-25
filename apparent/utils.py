@@ -5,6 +5,7 @@ This module provides utility functions for downloading and setting up local data
 the Apparent package, enabling local access to the physician referral network data.
 """
 
+import socket
 import time
 import subprocess
 from pathlib import Path
@@ -14,12 +15,12 @@ import requests
 import psutil
 
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
 logger = logging.getLogger(__name__)
+
+
+def _is_datasette(proc: psutil.Process) -> bool:
+    """True if the process looks like `datasette`, `python .../datasette` or `python -m datasette`."""
+    return any(Path(arg).name.lower() == "datasette" for arg in proc.cmdline()[:3])
 
 
 def download_and_launch_local_datasette(
@@ -87,8 +88,8 @@ def download_and_launch_local_datasette(
 
     Examples
     --------
-    >>> from apparent.utils import download_and_launch_local_db
-    >>> result = download_and_launch_local_db(
+    >>> from apparent.utils import download_and_launch_local_datasette
+    >>> result = download_and_launch_local_datasette(
     ...     db_path="path/to/save/database.db",
     ...     port=8080
     ... )
@@ -143,126 +144,84 @@ def download_and_launch_local_datasette(
     for key, value in datasette_settings.items():
         cmd.append(f"--setting={key}")
         cmd.append(str(value))
-    
+
+    local_url = f"http://127.0.0.1:{port}"
+    # Datasette names the database after the file stem
+    csv_url = f"{local_url}/{db_path.stem}.csv"
+
+    # Refuse to start if something is already listening, otherwise the readiness
+    # check below would succeed against the other server
+    try:
+        with socket.create_connection(("127.0.0.1", port), timeout=1):
+            pass
+    except OSError:
+        pass
+    else:
+        msg = (
+            f"Port {port} is already in use. Stop the existing server "
+            f"(e.g. stop_local_datasette(port={port})) or choose another port."
+        )
+        logger.error(msg)
+        raise RuntimeError(msg)
+
     logger.info(f"Starting Datasette on port {port}...")
     if verbose:
         logger.info(f"Command: {' '.join(cmd)}")
-    
-    # Start Datasette process
-    process = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True,
-    )
+
+    # Send output to a log file: an unread PIPE fills up with request logs and
+    # blocks the server
+    log_path = db_path.with_suffix(".datasette.log")
+    with open(log_path, "w") as log_file:
+        process = subprocess.Popen(cmd, stdout=log_file, stderr=subprocess.STDOUT)
 
     if verbose:
-        logger.info(f"Process started with PID: {process.pid}")
-    
+        logger.info(f"Process started with PID: {process.pid}, logging to {log_path}")
+
     # Wait for Datasette to start
-    local_url = f"http://127.0.0.1:{port}"
-    csv_url = f"{local_url}/us_physician_referral_networks.csv"
-    
+    ready = False
     start_time = time.time()
     while time.time() - start_time < timeout:
-        # Check if process is still running and capture any output
         if process.poll() is not None:
-            # Process has terminated, capture all remaining output
-            stdout, stderr = process.communicate()
-            if verbose:
-                if stdout:
-                    for line in stdout.strip().split('\n'):
-                        if line.strip():
-                            logger.info(f"[stdout] {line}")
-                if stderr:
-                    for line in stderr.strip().split('\n'):
-                        if line.strip():
-                            logger.error(f"[stderr] {line}")
-            
-            error_message = f"Datasette process exited unexpectedly (return code {process.returncode})"
+            error_message = (
+                f"Datasette process exited unexpectedly (return code {process.returncode}). "
+                f"Output:\n{log_path.read_text()}"
+            )
             logger.error(error_message)
             raise RuntimeError(error_message)
-        
-        # Try to read any available output without blocking (only in verbose mode)
-        if verbose:
-            try:
-                import select
-                
-                # Check if there's data available to read (Unix-like systems)
-                if hasattr(select, 'select'):
-                    ready, _, _ = select.select([process.stdout, process.stderr], [], [], 0)
-                    
-                    for stream in ready:
-                        line = stream.readline()
-                        if line:
-                            if stream == process.stdout:
-                                logger.info(f"[stdout] {line.strip()}")
-                            else:
-                                logger.error(f"[stderr] {line.strip()}")
-            except (ImportError, OSError):
-                # select not available or not working, skip non-blocking read
-                pass
-        
-        # Check if Datasette is responding
+
         try:
-            if verbose:
-                logger.debug(f"Testing connection to {local_url}")
             response = requests.get(local_url, timeout=3)
-            
             if response.status_code == 200:
-                logger.info("Datasette is ready!")
+                ready = True
                 break
             elif verbose:
                 logger.warning(f"Unexpected status: {response.status_code}")
-                
         except requests.RequestException as e:
             if verbose:
                 logger.debug(f"Connection failed: {e}")
-        
+
         elapsed = int(time.time() - start_time)
         if elapsed % 10 == 0 or verbose:  # Log every 10 seconds normally, or every 2 seconds in verbose mode
             logger.info(f"Waiting for Datasette... ({elapsed}s)")
         time.sleep(2)
-    
-    # Check if we timed out
-    if time.time() - start_time >= timeout:
-        logger.error(f"Datasette failed to start after {timeout} seconds")
-        
-        # Capture any remaining output before terminating
-        if process.poll() is None:
-            # Process is still running, terminate and capture output
-            process.terminate()
-            try:
-                stdout, stderr = process.communicate(timeout=5)
-                if stdout:
-                    for line in stdout.strip().split('\n'):
-                        if line.strip():
-                            logger.info(f"[Datasette stdout] {line}")
-                if stderr:
-                    for line in stderr.strip().split('\n'):
-                        if line.strip():
-                            logger.error(f"[Datasette stderr] {line}")
-            except subprocess.TimeoutExpired:
-                logger.error("Process did not terminate gracefully, killing it")
-                process.kill()
-                stdout, stderr = process.communicate()
-        
-        raise TimeoutError(f"Datasette failed to start after {timeout} seconds")
-    
-    # Final check if Datasette started successfully
-    try:
-        response = requests.get(local_url, timeout=1)
-        if response.status_code != 200:
-            raise TimeoutError(f"Datasette responded with status code {response.status_code}")
-    except requests.RequestException as e:
-        # Kill the process if it's still running
-        if process.poll() is None:
-            process.terminate()
-            
-        error_message = f"Datasette failed to respond properly: {e}"
+
+    if not ready:
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            logger.error("Process did not terminate gracefully, killing it")
+            process.kill()
+            process.wait()
+        error_message = (
+            f"Datasette failed to start after {timeout} seconds. "
+            f"Output:\n{log_path.read_text()}"
+        )
         logger.error(error_message)
         raise TimeoutError(error_message)
-    
+
+    logger.info("Datasette is ready!")
+
     # Update .env file if requested
     if update_env:
         update_env_file(csv_url)
@@ -303,7 +262,10 @@ def download_file(url: str, destination: Union[str, Path], chunk_size: int = 819
         If the download fails for any reason.
     """
     destination = Path(destination)
-    
+    # Download to a temp file and rename on success, so an interrupted download
+    # never leaves a truncated database at the destination
+    part_path = destination.with_name(destination.name + ".part")
+
     try:
         with requests.get(url, stream=True) as r:
             r.raise_for_status()
@@ -314,7 +276,7 @@ def download_file(url: str, destination: Union[str, Path], chunk_size: int = 819
             logger.info(f"Downloading {total_size_mb:.1f} MB file...")
             
             downloaded = 0
-            with open(destination, 'wb') as f:
+            with open(part_path, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=chunk_size):
                     if chunk:
                         f.write(chunk)
@@ -325,13 +287,14 @@ def download_file(url: str, destination: Union[str, Path], chunk_size: int = 819
                         if total_size and downloaded % (max(1, int(total_size * 0.05))) < chunk_size:
                             downloaded_mb = downloaded / (1024 * 1024)
                             logger.info(f"Downloaded {downloaded_mb:.1f} MB of {total_size_mb:.1f} MB ({progress_pct:.1f}%)")
-                            
+
+        part_path.replace(destination)
     except requests.exceptions.RequestException as e:
         logger.error(f"Error downloading file: {e}")
-        # Remove partial file if it exists
-        if destination.exists():
-            destination.unlink()
         raise
+    finally:
+        # Remove partial file on any failure, including KeyboardInterrupt
+        part_path.unlink(missing_ok=True)
 
 
 def update_env_file(local_url: str) -> None:
@@ -348,27 +311,25 @@ def update_env_file(local_url: str) -> None:
     None
     """
     env_path = Path(".env")
-    
-    # Read existing environment variables if file exists
-    env_vars = {}
-    if env_path.exists():
-        with open(env_path, "r") as f:
-            for line in f:
-                if "=" in line:
-                    key, value = line.strip().split("=", 1)
-                    env_vars[key] = value
-    
-    # Update or add LOCAL_URL
-    env_vars["LOCAL_URL"] = local_url
-    
-    # Make sure APPARENT_URL is set
-    if "APPARENT_URL" not in env_vars:
-        env_vars["APPARENT_URL"] = "https://apparent.topology.rocks/us_physician_referral_networks.csv"
-    
-    # Write updated environment variables back to file
-    with open(env_path, "w") as f:
-        for key, value in env_vars.items():
-            f.write(f"{key}={value}\n")
+    updates = {"LOCAL_URL": local_url}
+    defaults = {"APPARENT_URL": "https://apparent.topology.rocks/us_physician_referral_networks.csv"}
+
+    # Rewrite matching keys in place, keeping comments and blank lines untouched
+    lines = env_path.read_text().splitlines() if env_path.exists() else []
+    seen = set()
+    for i, line in enumerate(lines):
+        key = line.split("=", 1)[0].strip()
+        if line.lstrip().startswith("#") or "=" not in line:
+            continue
+        seen.add(key)
+        if key in updates:
+            lines[i] = f"{key}={updates[key]}"
+
+    for key, value in {**defaults, **updates}.items():
+        if key not in seen:
+            lines.append(f"{key}={value}")
+
+    env_path.write_text("\n".join(lines) + "\n")
     
     logger.info(f"Updated .env file with LOCAL_URL={local_url}")
 
@@ -407,11 +368,11 @@ def stop_local_datasette(port: Optional[int] = None, pid: Optional[int] = None, 
     
     Examples
     --------
-    >>> from apparent.utils import stop_datasette
+    >>> from apparent.utils import stop_local_datasette
     >>> # Stop by port
-    >>> stopped = stop_datasette(port=8001)
+    >>> stopped = stop_local_datasette(port=8001)
     >>> # Stop by process ID  
-    >>> stopped = stop_datasette(pid=12345)
+    >>> stopped = stop_local_datasette(pid=12345)
     """
     if port is None and pid is None:
         raise ValueError("Either port or pid must be provided")
@@ -428,7 +389,7 @@ def stop_local_datasette(port: Optional[int] = None, pid: Optional[int] = None, 
             try:
                 connections = proc.connections()
                 for conn in connections:
-                    if conn.laddr.port == port and conn.status == psutil.CONN_LISTEN:
+                    if conn.laddr.port == port and conn.status == psutil.CONN_LISTEN and _is_datasette(proc):
                         processes_to_stop.append(proc)
                         if verbose:
                             logger.info(f"Found process {proc.pid} ({proc.name()}) listening on port {port}")
@@ -522,7 +483,7 @@ def list_datasette_processes(verbose: bool = False) -> List[dict]:
         try:
             # Check if this is a Datasette process
             cmdline = proc.cmdline()
-            if cmdline and len(cmdline) > 0 and 'datasette' in cmdline[0].lower():
+            if _is_datasette(proc):
                 # Get ports this process is listening on
                 ports = []
                 try:

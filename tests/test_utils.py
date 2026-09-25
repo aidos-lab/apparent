@@ -75,6 +75,44 @@ class TestUtils:
             content = f.read()
             assert content == mock_content
     
+    def test_download_file_interrupted_leaves_no_file(self, temp_dir):
+        """An interrupted download must not leave a partial DB behind."""
+        class Interrupted(MockResponse):
+            def iter_content(self, chunk_size=1):
+                yield b"partial"
+                raise KeyboardInterrupt
+
+        dest_path = Path(temp_dir) / "test.db"
+        with mock.patch("apparent.utils.requests.get", return_value=Interrupted()):
+            with pytest.raises(KeyboardInterrupt):
+                download_file("https://example.com/test.db", dest_path)
+
+        assert list(Path(temp_dir).iterdir()) == []
+
+    def test_update_env_file_preserves_comments(self, temp_dir, monkeypatch):
+        """Comments and blank lines survive, and LOCAL_URL is updated in place."""
+        monkeypatch.chdir(temp_dir)
+        Path(".env").write_text("# FOO=bar\n\nLOCAL_URL=old\nAPPARENT_URL=x\n")
+
+        update_env_file("new")
+
+        assert Path(".env").read_text() == "# FOO=bar\n\nLOCAL_URL=new\nAPPARENT_URL=x\n"
+
+    @mock.patch("apparent.utils.psutil")
+    def test_stop_local_datasette_by_port_ignores_other_processes(self, mock_psutil):
+        """A non-Datasette process on the port is left alone."""
+        mock_proc = mock.MagicMock()
+        mock_proc.cmdline.return_value = ["postgres", "-D", "data"]
+        mock_conn = mock.MagicMock()
+        mock_conn.laddr.port = 8001
+        mock_conn.status = "LISTEN"
+        mock_proc.connections.return_value = [mock_conn]
+        mock_psutil.process_iter.return_value = [mock_proc]
+        mock_psutil.CONN_LISTEN = "LISTEN"
+
+        assert stop_local_datasette(port=8001) is False
+        mock_proc.terminate.assert_not_called()
+
     def test_update_env_file(self, temp_dir):
         """Test updating the .env file."""
         import os
@@ -130,7 +168,7 @@ class TestUtils:
         # Verify Datasette was launched correctly
         assert result['url'] == "http://127.0.0.1:9999"
         assert result['port'] == 9999
-        assert result['csv_url'] == "http://127.0.0.1:9999/us_physician_referral_networks.csv"
+        assert result['csv_url'] == "http://127.0.0.1:9999/test.csv"
         assert 'pid' in result
         mock_popen.assert_called_once()
         
@@ -170,7 +208,7 @@ class TestUtils:
         # Verify Datasette was launched correctly
         assert result['url'] == "http://127.0.0.1:9999"
         assert result['port'] == 9999
-        assert result['csv_url'] == "http://127.0.0.1:9999/us_physician_referral_networks.csv"
+        assert result['csv_url'] == "http://127.0.0.1:9999/new.csv"
         assert 'pid' in result
         
         # Check that download was attempted
@@ -222,8 +260,7 @@ class TestUtils:
     @mock.patch("apparent.utils.requests.get")
     @mock.patch("apparent.utils.subprocess.Popen")
     @mock.patch("apparent.utils.update_env_file")
-    @mock.patch("select.select")  # Mock select module directly
-    def test_download_and_launch_local_datasette_verbose_mode(self, mock_select, mock_update_env, mock_popen, mock_get, temp_dir):
+    def test_download_and_launch_local_datasette_verbose_mode(self, mock_update_env, mock_popen, mock_get, temp_dir):
         """Test that verbose mode provides additional logging."""
         # Create a mock DB file
         db_path = Path(temp_dir) / "test.db"
@@ -236,9 +273,6 @@ class TestUtils:
         mock_process.communicate.return_value = ("output", "")
         mock_process.pid = 12345
         mock_popen.return_value = mock_process
-        
-        # Mock select to return empty (no data available)
-        mock_select.return_value = ([], [], [])
         
         mock_get.return_value = MockResponse()
         
@@ -254,7 +288,7 @@ class TestUtils:
             
             # Check that verbose logging was used
             mock_logger.info.assert_any_call("Command: datasette %s --port=9999 --setting=sql_time_limit_ms 500000 --setting=max_returned_rows 200000 --setting=allow_csv_stream off" % str(db_path))
-            mock_logger.info.assert_any_call("Process started with PID: 12345")
+            mock_logger.info.assert_any_call(f"Process started with PID: 12345, logging to {Path(temp_dir) / 'test.datasette.log'}")
     
     
     def test_stop_local_datasette_no_port_or_pid(self):
@@ -271,6 +305,7 @@ class TestUtils:
         mock_proc = mock.MagicMock()
         mock_proc.pid = 12345
         mock_proc.name.return_value = "datasette"
+        mock_proc.cmdline.return_value = ["datasette", "test.db"]
         
         # Create mock connection object
         mock_conn = mock.MagicMock()
@@ -327,6 +362,7 @@ class TestUtils:
         mock_proc = mock.MagicMock()
         mock_proc.pid = 12345
         mock_proc.name.return_value = "datasette"
+        mock_proc.cmdline.return_value = ["datasette", "test.db"]
         
         # Create mock connection object
         mock_conn = mock.MagicMock()

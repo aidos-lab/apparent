@@ -136,11 +136,11 @@ from apparent import Apparent
 from apparent.utils import download_and_launch_local_datasette, stop_local_datasette
 
 # Download the database and start a local Datasette server
-local_url = download_and_launch_local_datasette(verbose=True)
+local = download_and_launch_local_datasette(verbose=True)
 
-print(f"Local Datasette server running at: {local_url}")
-# Now you can use Apparent as normal, it will automatically use the local URL
-app = Apparent(base_url=local_url)
+print(f"Local Datasette server running at: {local['url']}")
+# Point Apparent at the local CSV endpoint
+app = Apparent(base_url=local["csv_url"])
 
 # Simple sample query that mirrors the test patterns
 # This gets basic network info for small networks from 2017
@@ -236,7 +236,7 @@ from apparent.utils import download_and_launch_local_datasette, stop_local_datas
 import subprocess
 
 # Download DB and start Datasette
-local_url = download_and_launch_local_datasette(
+local = download_and_launch_local_datasette(
     db_path="data/us_physician_referral_networks.db",
     port=8001,
     update_env=True
